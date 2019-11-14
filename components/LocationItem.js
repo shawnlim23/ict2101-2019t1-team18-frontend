@@ -1,12 +1,13 @@
 import React, { PureComponent } from 'react';
 import { View, Alert, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Geocoder from 'react-native-geocoding';
 
 class LocationItem extends PureComponent {
   _handlePress = async () => {
     const res = await this.props.fetchDetails(this.props.place_id)
-    console.log('result', res)
+    console.log('Lat:', res.geometry.location.lat)   
+    console.log('Lng', res.geometry.location.lng)   
   }
-
   render() {
     return (
       <TouchableOpacity style={styles.root} onPress={this._handlePress}>
