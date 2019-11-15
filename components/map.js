@@ -4,8 +4,8 @@ import MapView,{ PROVIDER_GOOGLE, Polyline, Marker, Circle } from 'react-native-
 import polyUtil from 'polyline-encoded';
 import {PermissionsAndroid} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-import {GOOGLE_PLACES_API} from 'react-native-dotenv';
-
+import {GOOGLE_PLACES_API, GOOGLE_DIRECTIONS_API} from 'react-native-dotenv';
+import MapViewDirections from 'react-native-maps-directions';
 
 class map extends React.Component{
 
@@ -17,11 +17,16 @@ class map extends React.Component{
             latitude: 0,
             longitude: 0,
             loading: true,
-            data: []
+            data: [],
+            first_mile: {},
+            last_mile: {},
+            fm_polyline: [],
+            lm_polyline: []
+
         };
     }
 
-
+    // WIP
     async findNearbyPlaces(){
 
         const data = {
@@ -40,6 +45,7 @@ class map extends React.Component{
         // while (responseJSON.next_page_token){
 
             responseJSON.results.map((place) => {
+
 
                 places.push({
                     name: place.name,
@@ -74,6 +80,56 @@ class map extends React.Component{
 
     }
 
+    createJourney(dest){
+
+        return (<MapViewDirections
+        origin = {{latitude: this.state.latitude, longitude: this.state.longitude}}
+        destination = {{ latitude: dest.lat, longitude: dest.long }}
+        apikey = {GOOGLE_PLACES_API}
+        mode = {"TRANSIT"}
+        strokeWidth = {3}
+        >
+        </MapViewDirections>)
+    }
+
+
+    async generateFMLM(dest){
+
+        const startLoc = [this.state.latitude, this.state.longitude];
+        const destinationLoc = [dest.lat, dest.long];
+
+        try{
+            const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?&key=${ GOOGLE_PLACES_API }&origin=${ startLoc }&destination=${ destinationLoc }&mode=${'transit'}`)
+            const resJson = await response.json();
+
+            const steps = resJson.routes[0].legs[0].steps
+            const first_mile = steps[0]
+            const last_mile = steps[steps.length - 1]
+
+            const fm_coordinates = polyUtil.decode(first_mile.polyline.points).map(([latitude, longitude]) => ({
+                latitude,
+                longitude
+            }));
+
+
+            const lm_coordinates = polyUtil.decode(last_mile.polyline.points).map(([latitude, longitude]) => ({
+                latitude,
+                longitude
+            }));
+
+            this.setState({
+                first_mile: first_mile,
+                last_mile: last_mile,
+                fm_polyline: fm_coordinates,
+                lm_polyline: lm_coordinates
+            })
+
+        } catch(error) {
+            console.log(error);
+        }
+
+    }
+
 
 
     async requestPermission(){
@@ -98,6 +154,7 @@ class map extends React.Component{
 
     componentWillMount(){
        this.requestPermission();
+
     }
 
 
@@ -105,14 +162,13 @@ class map extends React.Component{
 
         if (prevState.latitude !== this.state.latitude && prevState.longitude !== this.state.longitude){
             this.findNearbyPlaces();
+
+            this.generateFMLM({lat: 1.3553794, long: 103.8677444});
         }
+
     }
 
 
-
-    // componentDidMount(){
-    //     this.findNearbyPlaces();
-    // }
 
     render(){
 
@@ -129,39 +185,48 @@ class map extends React.Component{
             longitudeDelta: 0.01
         }
 
-        let my_location = {
-            latitude: this.state.latitude,
-            longitude: this.state.longitude
-        }
-        console.log(my_location);
-        console.log(this.state.data);
+        const journey = this.createJourney({lat: 1.3553794, long: 103.8677444})
+
 
         return (
             <MapView
                 provider={PROVIDER_GOOGLE}
                 style={mapStyles.map}
                 region={initialRegion}
-                region={initialRegion}
+                loadingEnabled = {true}
+                moveOnMarkerPress = {false}
+                showsUserLocation={true}
+                showsCompass={true}
+                showsPointsOfInterest = {false}
             >
 
-            <Marker coordinate = { my_location }>
+            <Polyline
+                    coordinates={this.state.fm_polyline}
+                    strokeColor="red"
+                    strokeWidth={10}
+            />
 
-            </Marker>
+            <Polyline
+                    coordinates={this.state.lm_polyline}
+                    strokeColor="red"
+                    strokeWidth={10}
+            />
 
 
-            {/* <Polyline
-                coordinates={latlngs}
-                strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
-                strokeColors={[
-                    '#7F0000',
-                    '#00000000', // no color, creates a "long" gradient between the previous and next coordinate
-                    '#B24112',
-                    '#E5845C',
-                    '#238C23',
-                    '#7F0000'
-                ]}
-                strokeWidth={6}
-            /> */}
+            {journey}
+
+            {this.state.data.map((location) => {
+                if (location.lat && location.long){
+                    return <MapView.Marker
+                        coordinate = {{
+                            latitude: location.lat,
+                            longitude: location.long
+                        }}
+                    />
+                }
+                return null;
+            })}
+
             </MapView>
 
 
