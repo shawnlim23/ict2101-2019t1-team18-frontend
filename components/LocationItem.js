@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import { View, Alert, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Geocoder from 'react-native-geocoding';
 
 class LocationItem extends PureComponent {
   _handlePress = async () => {
