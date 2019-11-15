@@ -80,6 +80,11 @@ class map extends React.Component{
 
     }
 
+
+
+
+
+
     createJourney(dest){
 
         return (<MapViewDirections
@@ -127,6 +132,18 @@ class map extends React.Component{
         } catch(error) {
             console.log(error);
         }
+
+    }
+
+
+    inGeoFence(checkPoint, centerPoint, km){
+
+        var ky = 40000 / 360;
+        var kx = Math.cos(Math.PI * centerPoint.latitude / 180.0) * ky;
+        var dx = Math.abs(centerPoint.longitude - checkPoint.longitude) * kx;
+        var dy = Math.abs(centerPoint.latitude - checkPoint.latitude) * ky;
+        console.log(Math.sqrt(dx * dx + dy * dy) <= km)
+        return Math.sqrt(dx * dx + dy * dy) <= km;
 
     }
 
@@ -222,10 +239,34 @@ class map extends React.Component{
                             latitude: location.lat,
                             longitude: location.long
                         }}
+                        onPress = {() => {this.inGeoFence(
+                            {latitude: location.lat, longitude: location.long},
+                            {latitude: this.state.latitude, longitude: this.state.longitude},
+                            0.05
+                        )}}
                     />
                 }
                 return null;
             })}
+
+            {this.state.data.map((location) => {
+                if (location.lat && location.long){
+                    return <MapView.Circle
+                        center = {{
+                            latitude: location.lat,
+                            longitude: location.long
+                        }}
+                        radius = {50}
+                        fillColor = {'rgba(230,238,255,0.5)'}
+                    />
+                }
+                return null;
+            })}
+
+
+
+
+
 
             </MapView>
 
