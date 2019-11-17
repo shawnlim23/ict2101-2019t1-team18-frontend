@@ -13,7 +13,7 @@ export default class camera extends PureComponent<{}> {
           }}
           style={styles.preview}
           type={RNCamera.Constants.Type.back}
-          flashMode={RNCamera.Constants.FlashMode.on}
+          flashMode={RNCamera.Constants.FlashMode.off}
           androidCameraPermissionOptions={{
             title: 'Permission to use camera',
             message: 'We need your permission to use your camera',
@@ -32,7 +32,7 @@ export default class camera extends PureComponent<{}> {
         />
         <View style={{ flex: 0, flexDirection: 'row', justifyContent: 'center' }}>
           <TouchableOpacity onPress={this.takePicture.bind(this)} style={styles.capture}>
-            <Text style={{ fontSize: 14 }}> SNAP </Text>
+            <Text style={{ fontSize: 14 }}> Capture </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -41,9 +41,9 @@ export default class camera extends PureComponent<{}> {
 
   takePicture = async() => {
     if (this.camera) {
-      const options = { quality: 0.5, base64: true };
+      const options = { quality: 0.5, base64: true, doNotSave: false, pauseAfterCapture: true};
       const data = await this.camera.takePictureAsync(options);
-      console.log(data.uri);
+      cameraRoll.saveToCameraRoll(data.uri);
     }
   };
 }
