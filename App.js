@@ -9,6 +9,15 @@ import {StyleSheet} from 'react-native';
 import MapView,{ PROVIDER_GOOGLE, Polyline } from 'react-native-maps';
 import polyUtil from 'polyline-encoded';
 import Map from './components/map'
+import { Button, ThemeProvider, Header } from 'react-native-elements';
+
+
+const theme = {
+	Button: {
+	  raised: true,
+	  color: 'red'
+	},
+  };
 
 // const styles = StyleSheet.create({
 //   map: {
@@ -60,26 +69,13 @@ import Map from './components/map'
 
 const App = () => {
   return (
-      <Map/>
-  //   <MapView
-  //     provider={PROVIDER_GOOGLE}
-  //     style={styles.map}
-  //     region={getRegionForCoordinates(latlngs)}
-  //   >
-  //   <Polyline
-	// 	coordinates={latlngs}
-	// 	strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
-	// 	strokeColors={[
-	// 		'#7F0000',
-	// 		'#00000000', // no color, creates a "long" gradient between the previous and next coordinate
-	// 		'#B24112',
-	// 		'#E5845C',
-	// 		'#238C23',
-	// 		'#7F0000'
-	// 	]}
-	// 	strokeWidth={6}
-	// />
-  //   </MapView>
+
+	<ThemeProvider theme={theme}>
+
+		 <Map/>
+
+	</ThemeProvider>
+
   );
 };
 
