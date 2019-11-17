@@ -1,7 +1,6 @@
 import React from 'react';
 import Autoc from './autocomplete';
 import {StyleSheet,Text,View} from 'react-native';
-import Footer from './Footer';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import HomeScreen from './screens/homeScreen';
@@ -19,6 +18,7 @@ const RootStack = createStackNavigator(
     Details: DetailsScreen,
   },
   {
+    headerMode:'none',  
     initialRouteName: 'Home',
   }
 );
