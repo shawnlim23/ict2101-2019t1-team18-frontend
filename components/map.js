@@ -5,7 +5,7 @@ import polyUtil from 'polyline-encoded';
 import {PermissionsAndroid} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {GOOGLE_PLACES_API, GOOGLE_DIRECTIONS_API} from 'react-native-dotenv';
-// import { Button, ThemeProvider, Overlay, Text, Header } from 'react-native-elements';
+import { Rating } from 'react-native-elements';
 
 
 class map extends React.Component{
@@ -50,13 +50,14 @@ class map extends React.Component{
 
             responseJSON.results.map((place) => {
 
-
                 places.push({
                     name: place.name,
                     lat: place.geometry.location.lat,
                     long: place.geometry.location.lng,
-                    placeID: place.place_id
+                    placeID: place.place_id,
+                    rating: place.rating ? place.rating : 0
                 })
+
             });
 
 
@@ -96,6 +97,10 @@ class map extends React.Component{
             const resJson = await response.json();
 
             const steps = resJson.routes[0].legs[0].steps
+
+            const journey_instructions = steps.map(step=>step.html_instructions).join('.');
+
+
             const first_mile = steps[0]
             const last_mile = steps[steps.length - 1]
 
@@ -109,9 +114,8 @@ class map extends React.Component{
                 first_mile: first_mile,
                 last_mile: last_mile,
                 journey_coordinates: overview_coordinates,
+                instruction: journey_instructions
             })
-
-            console.log(this.state.first_mile)
 
         } catch(error) {
             console.log(error);
@@ -141,18 +145,6 @@ class map extends React.Component{
             lm_coordinates: lm_coordinates
         })
 
-
-        const initial_instruction = this.state.first_mile.html_instructions
-
-        if(this.state.completed_first){
-            initial_instruction = this.state.last_mile.html_instructions
-        }
-
-        this.setState({
-            instruction: initial_instruction
-        })
-
-
         this.watchID = Geolocation.watchPosition((position) => {
 
             console.log(position);
@@ -174,7 +166,6 @@ class map extends React.Component{
         var kx = Math.cos(Math.PI * centerPoint.latitude / 180.0) * ky;
         var dx = Math.abs(centerPoint.longitude - checkPoint.longitude) * kx;
         var dy = Math.abs(centerPoint.latitude - checkPoint.latitude) * ky;
-        // console.log(Math.sqrt(dx * dx + dy * dy) <= km)
         return Math.sqrt(dx * dx + dy * dy) <= km;
 
     }
@@ -225,17 +216,10 @@ class map extends React.Component{
     }
 
 
-
-
-
    handleLocationChange(current_location){
-
     const current = { latitude: current_location.coords.latitude, longitude: current_location.coords.longitude }
-
-
     if (this.state.completed_first === false) {
         this.checkRouteState(current, this.state.first_mile, 'first mile');
-
     }else{
         this.checkRouteState(current, this.state.last_mile, 'last_mile');
     }
@@ -275,14 +259,36 @@ class map extends React.Component{
    }
 
 
-
-
-
     componentDidUpdate(prevProps, prevState){
         if (prevState.latitude != this.state.latitude && prevState.longitude !== this.state.longitude){
             this.findNearbyPlaces();
         }
     }
+
+
+    // async updateRoute(waypoint){
+
+    //     const start = [this.state.latitude, this.state.longitude];
+    //     const end = this.state.first_mile ?
+    //     [this.state.last_mile.end_location.lat, this.state.last_mile.end_location.lng] : [this.state.first_mile.end_location.lat, this.state.first_mile.end_location.lng ]
+
+    //     const new_waypoint = [waypoint.lat, waypoint.long]
+
+    //     try{
+    //         const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?&key=${ GOOGLE_PLACES_API }&origin=${ start }&destination=${ end }&mode=${'walking'}&waypoints=${new_waypoint}`)
+    //         const responseJSON = response.json();
+    //         // const updated_coord = responseJSON.polyUtil
+
+    //         // if (this.state.completed_first){
+    //         //     this.setState({
+    //         //         first_mile:
+    //         //     })
+    //         // }
+    //     }
+
+
+    // }
+
 
 
 
@@ -300,7 +306,6 @@ class map extends React.Component{
             latitudeDelta: 0.01,
             longitudeDelta: 0.01
         }
-
 
         return (
             <View style={{ flex: 1 }}>
@@ -344,17 +349,25 @@ class map extends React.Component{
 
             {this.state.data.map((location) => {
                 if (location.lat && location.long){
+
+                    const isProximity = this.withinProximity({latitude: location.lat, longitude: location.long},
+                    {latitude: this.state.latitude, longitude: this.state.longitude}, 0.1);
+
                     return <MapView.Marker
                         coordinate = {{
                             latitude: location.lat,
                             longitude: location.long
                         }}
-                        onPress = {() => {this.withinProximity(
-                            {latitude: location.lat, longitude: location.long},
-                            {latitude: this.state.latitude, longitude: this.state.longitude},
-                            0.05
-                        )}}
-                    />
+                    >
+                        <MapView.Callout>
+                            <View>
+                                <Text>{location.name}</Text>
+                                {isProximity ? (<Button title="View Canvas" onPress={() => console.log('clicked')}/>) : null}
+                                <Button title="Add to Route" onPress={() => console.log('clicked')}/>
+                                <Button title="View more information" onPress={() => console.log('clicked')}/>
+                            </View>
+                        </MapView.Callout>
+                    </MapView.Marker>
                 }
                 return null;
             })}
@@ -393,15 +406,13 @@ class map extends React.Component{
             </TouchableOpacity>
 
 
-
-
             <View style={{
                 position: 'absolute',//use absolute position to show button on top of the map
                 top: '50%', //for center align
                 alignSelf: 'flex-end' //for align to right
             }}
             >
-                <Button title="Press Here" onPress={() => this.startJourney()}> Press Here </Button>
+                <Button title="Press Here" onPress={() => this.startJourney()}>Start Routing</Button>
             </View>
 
 
