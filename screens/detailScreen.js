@@ -1,25 +1,28 @@
 import React from 'react';
-import { Button,StyleSheet, View, Text,TouchableOpacity ,SectionList,Alert,Platform } from 'react-native';
+import { Button,StyleSheet, View, Text,TouchableOpacity ,SectionList,Alert,Platform,Image } from 'react-native';
 const DATA = [
   {
     title: 'Start location',
     data: [
       {address:'Bishan',
-      description: 'S582834'},
+      description: 'S582834',
+      type:'start'},
     ]
   },
   {
     title: 'Opp Serangoon Stn',
     data: [
       {address:'Bus 50',
-      description: '10 mins'},
+      description: '10 mins',
+      type:'transit'},
     ]
   },
   {
     title: 'Reach Destination',
     data: [
       {address:'Ang Mo Kio Stn',
-      description: 'S623823'},
+      description: 'S623823',
+      type:'stop'},
     ]
   },
 ];
@@ -28,27 +31,43 @@ class SectionListItem extends React.Component{
     return (
       <View style={{
         flex:1,
-        flexDirection:'column',
+        flexDirection:'row',
         backgroundColor:'rgb(98,197,184)'
-      }}>
-        <Text style={{fontSize:16,marginLeft:20,marginRight:10}}>{this.props.item.address}
-        </Text>
-        <Text style={{fontSize:16,marginLeft:20,marginRight:10}}>{this.props.item.description}
-        </Text>
+      }}>       
+        {this.renderSwitch(this.props.item.type)}         
+        <View style={{flexDirection:'column'}}>
+          <Text style={{fontSize:16,marginLeft:20,marginRight:10}}>{this.props.item.address}
+          </Text>
+          <Text style={{fontSize:16,marginLeft:20,marginRight:10}}>{this.props.item.description}
+          </Text>
+        </View>
       </View>
     )
   }
+  renderSwitch(param)
+  {
+    switch (param){
+      case 'start':
+        return (<View><Image style={{width: 50, height: 50}} source={require('../images/startingpoint.jpg')} /></View> );
+      case 'stop':
+        return  (<View><Image style={{width: 50, height: 50}} source={require('../images/destination.jpg')} /></View> );
+      default:
+        return (<View><Image style={{width: 50, height: 50}} source={require('../images/transit.jpg')} /></View>);
+    }
+  }
+ 
 }
 
 class SectionHeader extends React.Component{
   render(){
     return(
-      <View style={{flex:1,backgroundColor:'rgb(77,120,140}',
+      <View style={{flex:1,backgroundColor:'#fec0aa',
       }}>
+        
         <Text style={{fontSize:16,fontWeight:'bold',color:'black',margin:20}}>
           {this.props.section.title}
           </Text>
-          <View style={{backgroundColor:'rgb(77,120,140)',height:1,margin:4,marginLeft:20,marginRight:10}}></View>
+          <View style={{backgroundColor:'rgb(77,120,140)',height:2,margin:1,marginLeft:20,marginRight:10}}></View>
       </View>
       )
   }
@@ -57,7 +76,7 @@ class DetailsScreen extends React.Component {
     render() {      
       return (        
         <View style={styles.containerCol}>
-          <Text> Bus Journey Details </Text>
+          <Text style={styles.journeyheader}> Bus Journey Details </Text>
           <View >
            
               <SectionList
@@ -105,5 +124,11 @@ class DetailsScreen extends React.Component {
       flex:1,
       justifyContent:'flex-end',
       marginBottom:8,
-    } 
+    } ,
+    journeyheader:{
+      fontSize:20,
+      backgroundColor:'yellow',
+      borderRadius:10,
+      alignSelf:'flex-start'
+    },
   })
