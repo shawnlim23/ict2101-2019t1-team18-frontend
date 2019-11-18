@@ -4,8 +4,9 @@ import MapView,{ PROVIDER_GOOGLE, Polyline, Marker, Circle } from 'react-native-
 import polyUtil from 'polyline-encoded';
 import {PermissionsAndroid} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-import {GOOGLE_PLACES_API, GOOGLE_DIRECTIONS_API} from 'react-native-dotenv';
-import { Rating } from 'react-native-elements';
+import {GOOGLE_PLACES_API, BACKEND_SERVER} from 'react-native-dotenv';
+import { Icon } from 'react-native-elements'
+import Modal, { ModalContent } from 'react-native-modals';
 
 
 
@@ -22,11 +23,14 @@ class map extends React.Component{
             data: [],
             first_mile: {},
             last_mile: {},
+            started_journey: false,
+            started_route: false,
             completed_first: false,
             journey_coordinates: [],
             fm_coordinates: [],
             lm_coordinates: [],
-            instruction: ''
+            instruction: '',
+            visible: false
         };
 
     }
@@ -90,34 +94,52 @@ class map extends React.Component{
         const startLoc = [this.state.latitude, this.state.longitude];
         const destinationLoc = [dest.lat, dest.long];
 
-        try{
-            const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?&key=${ GOOGLE_PLACES_API }&origin=${ startLoc }&destination=${ destinationLoc }&mode=${'transit'}&transit_mode=bus`)
-            const resJson = await response.json();
+        if (!this.state.started_journey){
 
-            const steps = resJson.routes[0].legs[0].steps
+            try{
+                const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?&key=${ GOOGLE_PLACES_API }&origin=${ startLoc }&destination=${ destinationLoc }&mode=${'transit'}&transit_mode=bus`)
+                const resJson = await response.json();
 
-            const journey_instructions = steps.map(step=>step.html_instructions).join('.');
+                const steps = resJson.routes[0].legs[0].steps
 
-
-            const first_mile = steps[0]
-            const last_mile = steps[steps.length - 1]
+                const journey_instructions = steps.map(step=>step.html_instructions).join('.');
 
 
-            const overview_coordinates = polyUtil.decode(resJson.routes[0].overview_polyline.points).map(([latitude, longitude]) => ({
-                latitude,
-                longitude
-            }));
+                const first_mile = steps[0]
+                const last_mile = steps[steps.length - 1]
+
+
+                const overview_coordinates = polyUtil.decode(resJson.routes[0].overview_polyline.points).map(([latitude, longitude]) => ({
+                    latitude,
+                    longitude
+                }));
+
+                this.setState({
+                    first_mile: first_mile,
+                    last_mile: last_mile,
+                    journey_coordinates: overview_coordinates,
+                    instruction: journey_instructions,
+                    started_journey: true
+                })
+
+            } catch(error) {
+                console.log(error);
+            }
+
+        }else{
 
             this.setState({
-                first_mile: first_mile,
-                last_mile: last_mile,
-                journey_coordinates: overview_coordinates,
-                instruction: journey_instructions
+                journey_coordinates: [],
+                started_journey: false,
+                first_mile: {},
+                last_mile: {},
+                completed_first: false,
+                fm_coordinates: [],
+                lm_coordinates: [],
+                instruction: ''
             })
-
-        } catch(error) {
-            console.log(error);
         }
+
 
     }
 
@@ -125,34 +147,50 @@ class map extends React.Component{
 
    startJourney(){
 
-        // Start Camera and diplay polyline
-        this.animateCamera();
 
-        const fm_coordinates = polyUtil.decode(this.state.first_mile.polyline.points).map(([latitude, longitude]) => ({
-            latitude,
-            longitude
-        }));
+        if (!this.state.started_route){
 
-        const lm_coordinates = polyUtil.decode(this.state.last_mile.polyline.points).map(([latitude, longitude]) => ({
-            latitude,
-            longitude
-        }));
+             // Start Camera and diplay polyline
+            this.animateCamera();
 
-        this.setState({
-            fm_coordinates: fm_coordinates,
-            lm_coordinates: lm_coordinates
-        })
+            const fm_coordinates = polyUtil.decode(this.state.first_mile.polyline.points).map(([latitude, longitude]) => ({
+                latitude,
+                longitude
+            }));
 
-        this.watchID = Geolocation.watchPosition((position) => {
+            const lm_coordinates = polyUtil.decode(this.state.last_mile.polyline.points).map(([latitude, longitude]) => ({
+                latitude,
+                longitude
+            }));
 
-            console.log(position);
-            this.handleLocationChange(position);
+            this.setState({
+                fm_coordinates: fm_coordinates,
+                lm_coordinates: lm_coordinates,
+                started_route: true,
+            })
 
-            }, (error) => {
-                console.log(error.code, error.message);
-            },
-            {enableHighAccuracy: true, timeout: 20000, distanceFilter: 10, maximumAge: 1000}
-        );
+            this.watchID = Geolocation.watchPosition((position) => {
+
+                console.log(position);
+                this.handleLocationChange(position);
+
+                }, (error) => {
+                    console.log(error.code, error.message);
+                },
+                {enableHighAccuracy: true, timeout: 20000, distanceFilter: 10, maximumAge: 1000}
+            );
+        }else{
+            this.setState({
+                fm_coordinates: [],
+                lm_coordinates: [],
+                first_mile: {},
+                last_mile: {},
+                started_route: false,
+            })
+
+            Geolocation.clearWatch(this.watchID);
+        }
+
 
     }
 
@@ -263,28 +301,42 @@ class map extends React.Component{
     }
 
 
-    // async updateRoute(waypoint){
+    async updateRoute(waypoint, placeID){
 
-    //     const start = [this.state.latitude, this.state.longitude];
-    //     const end = this.state.first_mile ?
-    //     [this.state.last_mile.end_location.lat, this.state.last_mile.end_location.lng] : [this.state.first_mile.end_location.lat, this.state.first_mile.end_location.lng ]
+        const start = [this.state.latitude, this.state.longitude];
+        const end = this.state.completed_first ?
+        [this.state.last_mile.end_location.lat, this.state.last_mile.end_location.lng] : [this.state.first_mile.end_location.lat, this.state.first_mile.end_location.lng ]
 
-    //     const new_waypoint = [waypoint.lat, waypoint.long]
+        console.log(waypoint);
 
-    //     try{
-    //         const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?&key=${ GOOGLE_PLACES_API }&origin=${ start }&destination=${ end }&mode=${'walking'}&waypoints=${new_waypoint}`)
-    //         const responseJSON = response.json();
-    //         // const updated_coord = responseJSON.polyUtil
+        try{
+            const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?&key=${ GOOGLE_PLACES_API }&origin=${ start }&destination=${ end }&mode=${'walking'}&waypoints=${ waypoint }`)
+            const responseJSON = await response.json();
 
-    //         // if (this.state.completed_first){
-    //         //     this.setState({
-    //         //         first_mile:
-    //         //     })
-    //         // }
-    //     }
+            const coordinates = polyUtil.decode(responseJSON.routes[0].overview_polyline.points).map(([latitude, longitude]) => ({
+                latitude,
+                longitude
+            }));
+
+            const steps = responseJSON.routes[0].legs[0]
+
+            this.state.completed_first ? this.setState({ lm_coordinates: coordinates, last_mile: steps }) : this.setState({ fm_coordinates: coordinates, first_mile: steps })
 
 
-    // }
+            const post_location = await fetch('http://' + BACKEND_SERVER + '/amble/landmark/' + placeID)
+            const post_location_json = await post_location.json();
+
+            console.log(post_location_json)
+
+            this.setState({ visible: false })
+
+        } catch(error){
+            console.log(error);
+        }
+
+
+    }
+
 
 
 
@@ -295,7 +347,7 @@ class map extends React.Component{
         const mapStyles = StyleSheet.create({
             map: {
                 ...StyleSheet.absoluteFillObject,
-            },
+            }
         });
 
         let initialRegion = {
@@ -331,7 +383,6 @@ class map extends React.Component{
                     strokeWidth={3}
             />
 
-
             <Polyline
                     coordinates={this.state.fm_coordinates}
                     strokeColor="red"
@@ -351,20 +402,38 @@ class map extends React.Component{
                     const isProximity = this.withinProximity({latitude: location.lat, longitude: location.long},
                     {latitude: this.state.latitude, longitude: this.state.longitude}, 0.1);
 
+                    const landmark_location = [location.lat, location.long];
+                    console.log(landmark_location, location.name)
+
                     return <MapView.Marker
                         coordinate = {{
                             latitude: location.lat,
                             longitude: location.long
                         }}
+                        onCalloutPress={() => this.setState( {visible:true })}
                     >
                         <MapView.Callout>
                             <View>
                                 <Text>{location.name}</Text>
-                                {isProximity ? (<Button title="View Canvas" onPress={() => console.log('clicked')}/>) : null}
-                                <Button title="Add to Route" onPress={() => console.log('clicked')}/>
-                                <Button title="View more information" onPress={() => console.log('clicked')}/>
+                                <Button title="View more information"/>
                             </View>
                         </MapView.Callout>
+
+                        <Modal
+                            visible={this.state.visible}
+                            onTouchOutside={() => {
+                            this.setState({ visible: false });
+                            }}
+                        >
+                            <ModalContent>
+                                <Text>{location.name}</Text>
+                                {isProximity ? (<Button title="View Canvas" onPress={() => console.log('clicked')}/>) : null}
+                                {this.state.started_route ? (<Button title="Add to Route" onPress={() => this.updateRoute(landmark_location, location.placeID)}/>) : null}
+                                <Button title="View more information" onPress={() => console.log('clicked')}/>
+                            </ModalContent>
+                        </Modal>
+
+
                     </MapView.Marker>
                 }
                 return null;
@@ -389,30 +458,29 @@ class map extends React.Component{
                 flexDirection: 'row',
                 height: 100,
                 padding: 20,
-                backgroundColor: 'blue'
+                backgroundColor: "#f44336",
+                borderRadius: 10,
+                opacity: 10,
+                elevation: 10
             }}>
-                <Text style={{color: 'white'}}>{this.state.instruction}</Text>
-             </View>
 
-
-             <TouchableOpacity style ={{
-                    alignItems: 'center',
-                    backgroundColor: '#DDDDDD',
-                    padding: 10
-                }} onPress={() => this.generateFMLM({lat: 1.3553794, long: 103.8677444 })}>
-                <Text style={{color: 'white'}}> Start Journey</Text>
-            </TouchableOpacity>
-
-
-            <View style={{
-                position: 'absolute',//use absolute position to show button on top of the map
-                top: '50%', //for center align
-                alignSelf: 'flex-end' //for align to right
-            }}
-            >
-                <Button title="Press Here" onPress={() => this.startJourney()}>Start Routing</Button>
+                <Text style={{color: 'white', fontSize: 20}} lineHeight={3} >{this.state.instruction}</Text>
             </View>
 
+
+             <View style ={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    width: '95%',
+                    bottom: 0,
+                    position: 'absolute',
+                    margin: 10,
+                    padding: 20,
+                    borderRadius: 15
+                }}>
+                {!this.state.started_route ? (<Button color="#ff5c5c" title={this.state.started_journey ? "Cancel Journey" : "Start Journey"} onPress={() => this.generateFMLM({lat: 1.3553794, long: 103.8677444 })}></Button>) : null}
+                {this.state.started_journey ? (<Button title={this.state.started_route ? "Cancel Route" : "Start Route" } color="#009688" onPress={() => this.startJourney()}></Button>) : null}
+            </View>
 
         </View>
 
