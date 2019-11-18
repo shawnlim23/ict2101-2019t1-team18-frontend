@@ -32,13 +32,13 @@ class SectionListItem extends React.Component{
       <View style={{
         flex:1,
         flexDirection:'row',
-        backgroundColor:'rgb(98,197,184)'
+        backgroundColor:'#ffbb33'
       }}>       
         {this.renderSwitch(this.props.item.type)}         
         <View style={{flexDirection:'column'}}>
-          <Text style={{fontSize:16,marginLeft:20,marginRight:10}}>{this.props.item.address}
+          <Text style={{fontSize:12,marginLeft:20,marginRight:10}}>{this.props.item.address}
           </Text>
-          <Text style={{fontSize:16,marginLeft:20,marginRight:10}}>{this.props.item.description}
+          <Text style={{fontSize:12,marginLeft:20,marginRight:10}}>{this.props.item.description}
           </Text>
         </View>
       </View>
@@ -48,11 +48,11 @@ class SectionListItem extends React.Component{
   {
     switch (param){
       case 'start':
-        return (<View><Image style={{width: 50, height: 50}} source={require('../images/startingpoint.jpg')} /></View> );
+        return (<View><Image style={{width: 35, height: 35}} source={require('../images/startingpoint.jpg')} /></View> );
       case 'stop':
-        return  (<View><Image style={{width: 50, height: 50}} source={require('../images/destination.jpg')} /></View> );
+        return  (<View><Image style={{width: 35, height: 35}} source={require('../images/destination.jpg')} /></View> );
       default:
-        return (<View><Image style={{width: 50, height: 50}} source={require('../images/transit.jpg')} /></View>);
+        return (<View><Image style={{width: 35, height: 35}} source={require('../images/transit.jpg')} /></View>);
     }
   }
  
@@ -64,7 +64,7 @@ class SectionHeader extends React.Component{
       <View style={{flex:1,backgroundColor:'#fec0aa',
       }}>
         
-        <Text style={{fontSize:16,fontWeight:'bold',color:'black',margin:20}}>
+        <Text style={{fontSize:16,fontWeight:'bold',color:'black',margin:5}}>
           {this.props.section.title}
           </Text>
           <View style={{backgroundColor:'rgb(77,120,140)',height:2,margin:1,marginLeft:20,marginRight:10}}></View>
@@ -122,11 +122,11 @@ class DetailsScreen extends React.Component {
     },     
     bottomRow:{
       flex:1,
-      justifyContent:'flex-end',
+      //justifyContent:'flex-end',
       marginBottom:8,
     } ,
     journeyheader:{
-      fontSize:20,
+      fontSize:16,
       backgroundColor:'yellow',
       borderRadius:10,
       alignSelf:'flex-start'
