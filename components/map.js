@@ -8,6 +8,7 @@ import {GOOGLE_PLACES_API, GOOGLE_DIRECTIONS_API} from 'react-native-dotenv';
 import { Rating } from 'react-native-elements';
 
 
+
 class map extends React.Component{
 
     constructor(props){
@@ -30,7 +31,6 @@ class map extends React.Component{
 
     }
 
-    // WIP
     async findNearbyPlaces(){
 
         const data = {
@@ -57,7 +57,6 @@ class map extends React.Component{
                     placeID: place.place_id,
                     rating: place.rating ? place.rating : 0
                 })
-
             });
 
 
@@ -84,7 +83,6 @@ class map extends React.Component{
         // })
 
     }
-
 
 
     async generateFMLM(dest){
@@ -185,13 +183,11 @@ class map extends React.Component{
     }
 
 
-
     async requestPermission(){
         const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
         console.log(granted);
        if (granted){
            Geolocation.getCurrentPosition((position) => {
-
             this.setState({
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude
@@ -204,6 +200,7 @@ class map extends React.Component{
            )
        }
     }
+
 
 
     componentDidMount(){
@@ -288,6 +285,7 @@ class map extends React.Component{
 
 
     // }
+
 
 
 
@@ -417,7 +415,6 @@ class map extends React.Component{
 
 
         </View>
-
 
         );
     }

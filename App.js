@@ -18,7 +18,6 @@ const theme = {
 	  color: 'red'
 	},
   };
-
 // const styles = StyleSheet.create({
 //   map: {
 //     ...StyleSheet.absoluteFillObject,
@@ -69,13 +68,11 @@ const theme = {
 
 const App = () => {
   return (
-
 	<ThemeProvider theme={theme}>
 
 		 <Map/>
 
 	</ThemeProvider>
-
   );
 };
 
