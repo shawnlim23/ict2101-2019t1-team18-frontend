@@ -173,11 +173,11 @@ yarn install
 
 ## Authors
 
-* **SIT ICT2101 2019 Team 18** 
-	- *Initial work* 
-	- [Jun Rong](https://github.com/markeyys)
-	- [Ted Lai](https://github.com/mynameisted)
-	- [Wei Han](https://github.com/tanweihan)
-	- [Yi Hang](https://github.com/Nova136)
-	- [Amirulamin](https://github.com/Amirulamin-SIT)
-	- [Shawn Lim](https://github.com/shawnlim23)
+**SIT ICT2101 2019 Team 18** 
+*Initial work* 
+- [Jun Rong](https://github.com/markeyys)
+- [Ted Lai](https://github.com/mynameisted)
+- [Wei Han](https://github.com/tanweihan)
+- [Yi Hang](https://github.com/Nova136)
+- [Amirulamin](https://github.com/Amirulamin-SIT)
+- [Shawn Lim](https://github.com/shawnlim23)
