@@ -5,12 +5,12 @@
 
  */
 import React, {Component} from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet,View} from 'react-native';
 import MapView,{ PROVIDER_GOOGLE, Polyline } from 'react-native-maps';
 import polyUtil from 'polyline-encoded';
 import Map from './components/map'
 import { Button, ThemeProvider, Header } from 'react-native-elements';
-
+import Landmark from './components/landmark'
 
 const theme = {
 	Button: {
@@ -68,11 +68,9 @@ const theme = {
 
 const App = () => {
   return (
-	<ThemeProvider theme={theme}>
-
-		 <Map/>
-
-	</ThemeProvider>
+    <View>
+    <Landmark/>
+  </View>
   );
 };
 
