@@ -4,7 +4,7 @@ import MapView,{ PROVIDER_GOOGLE, Polyline, Marker, Circle } from 'react-native-
 import polyUtil from 'polyline-encoded';
 import {PermissionsAndroid} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-import {GOOGLE_PLACES_API, GOOGLE_DIRECTIONS_API} from 'react-native-dotenv';
+import {GOOGLE_PLACES_API} from 'react-native-dotenv';
 import { Rating } from 'react-native-elements';
 
 
