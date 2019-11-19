@@ -1,5 +1,5 @@
 import React from 'react';
-import Autoc from './autocomplete';
+import Autoc from './components/autocomplete';
 import {StyleSheet,Text,View} from 'react-native';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';

@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
 import {StyleSheet,Text,TextInput,View,ScrollView,ActivityIndicator,Button} from 'react-native';
 import {GoogleAutoComplete} from 'react-native-google-autocomplete';
-import {API_KEY} from './key';
-import LocationItem from './components/LocationItem';
+import {API_KEY} from '../key';
+import LocationItem from './LocationItem';
 
 class Autoc extends React.Component {
   render() {
@@ -28,7 +28,7 @@ class Autoc extends React.Component {
                 <Button title="Clear" onPress={clearSearchs} />
               </View>
               {isSearching && <ActivityIndicator size="large" color="red" />}
-              <ScrollView>
+              <ScrollView style={{width:350}}>
                 {locationResults.map(el => (
                   <LocationItem
                     {...el}

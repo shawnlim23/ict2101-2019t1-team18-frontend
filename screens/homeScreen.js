@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Button,StyleSheet, View, Text,TouchableOpacity } from 'react-native';
-import Autoc from '../autocomplete';
+import Autoc from '../components/autocomplete';
 
 class HomeScreen extends React.Component {  
     render() {
