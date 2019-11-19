@@ -1,12 +1,14 @@
 import React, {Component} from 'react';
 import {StyleSheet, View, Text, Button, TouchableOpacity } from 'react-native';
-import MapView,{ PROVIDER_GOOGLE, Polyline, Marker, Circle } from 'react-native-maps';
+import MapView,{ PROVIDER_GOOGLE, Polyline, Marker, Circle, Callout } from 'react-native-maps';
 import polyUtil from 'polyline-encoded';
 import {PermissionsAndroid} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {GOOGLE_PLACES_API, BACKEND_SERVER} from 'react-native-dotenv';
 import { Icon } from 'react-native-elements'
-import Modal, { ModalContent } from 'react-native-modals';
+// import RBSheet from "react-native-raw-bottom-sheet";
+import RBS from './bottomsheet'
+
 
 
 
@@ -30,8 +32,9 @@ class map extends React.Component{
             fm_coordinates: [],
             lm_coordinates: [],
             instruction: '',
-            visible: false
+            rbs_data: { isOpen: false }
         };
+        this.rbs = React.createRef();
 
     }
 
@@ -49,42 +52,20 @@ class map extends React.Component{
         let response = await fetch(url);
         let responseJSON = await response.json();
         let places = [];
+        responseJSON.results.map((place) => {
 
-        // while (responseJSON.next_page_token){
-
-            responseJSON.results.map((place) => {
-
-                places.push({
-                    name: place.name,
-                    lat: place.geometry.location.lat,
-                    long: place.geometry.location.lng,
-                    placeID: place.place_id,
-                    rating: place.rating ? place.rating : 0
-                })
-            });
-
-
-            this.setState({
-                data: [this.state.data, ...places]
+            places.push({
+                name: place.name,
+                lat: place.geometry.location.lat,
+                long: place.geometry.location.lng,
+                placeID: place.place_id,
+                rating: place.rating ? place.rating : 0
             })
+        });
 
-            // this.setState({
-            //     nearby_places: [...this.state.nearby_places, places]
-            // })
-
-            // this.setState({
-            //     nearby_places: places
-            // })
-
-            // console.log(places);
-
-            // const new_page_response = await fetch(url + '&pagetoken=' + responseJSON.next_page_token + '');
-            // responseJSON = await new_page_response.json();
-            // console.log(responseJSON);
-        // }
-        // this.setState({
-        //     nearby_places: places
-        // })
+        this.setState({
+            data: [this.state.data, ...places]
+        })
 
     }
 
@@ -146,10 +127,7 @@ class map extends React.Component{
 
 
    startJourney(){
-
-
         if (!this.state.started_route){
-
              // Start Camera and diplay polyline
             this.animateCamera();
 
@@ -190,8 +168,6 @@ class map extends React.Component{
 
             Geolocation.clearWatch(this.watchID);
         }
-
-
     }
 
 
@@ -216,8 +192,6 @@ class map extends React.Component{
             },
             { duration: 750 }
         );
-
-
     }
 
 
@@ -328,8 +302,6 @@ class map extends React.Component{
 
             console.log(post_location_json)
 
-            this.setState({ visible: false })
-
         } catch(error){
             console.log(error);
         }
@@ -337,6 +309,27 @@ class map extends React.Component{
 
     }
 
+
+    // setRef(ref){
+    //     console.log(ref);
+    //     this.RBS = ref;
+    // }
+
+
+    displayBottomSheet(name, placeID, latlong, isProximity) {
+
+        this.rbs.open();
+        // this.RBS.open();
+        const rbs_data = {
+            name: name,
+            placeID: placeID,
+            location: latlong,
+            isProximity: isProximity
+        }
+        this.setState({
+            rbs_data: rbs_data
+        })
+    }
 
 
 
@@ -347,6 +340,15 @@ class map extends React.Component{
         const mapStyles = StyleSheet.create({
             map: {
                 ...StyleSheet.absoluteFillObject,
+            },
+            button: {
+                width: 150,
+                backgroundColor: "#4EB151",
+                paddingVertical: 10,
+                alignItems: "center",
+                borderRadius: 3,
+                margin: 10,
+                flexDirection: "row",
             }
         });
 
@@ -356,6 +358,7 @@ class map extends React.Component{
             latitudeDelta: 0.01,
             longitudeDelta: 0.01
         }
+
 
         return (
             <View style={{ flex: 1 }}>
@@ -376,7 +379,6 @@ class map extends React.Component{
                 zoomEnabled={true}
                 showsPointsOfInterest = {false}
             >
-
 
             <Polyline
                     coordinates={this.state.journey_coordinates}
@@ -403,40 +405,20 @@ class map extends React.Component{
                     {latitude: this.state.latitude, longitude: this.state.longitude}, 0.1);
 
                     const landmark_location = [location.lat, location.long];
-                    console.log(landmark_location, location.name)
 
                     return <MapView.Marker
                         coordinate = {{
                             latitude: location.lat,
                             longitude: location.long
                         }}
-                        onCalloutPress={() => this.setState( {visible:true })}
+                        onPress={() => {this.displayBottomSheet(location.name, location.placeID, landmark_location, isProximity)}}
+
                     >
-                        <MapView.Callout>
-                            <View>
-                                <Text>{location.name}</Text>
-                                <Button title="View more information"/>
-                            </View>
-                        </MapView.Callout>
-
-                        <Modal
-                            visible={this.state.visible}
-                            onTouchOutside={() => {
-                            this.setState({ visible: false });
-                            }}
-                        >
-                            <ModalContent>
-                                <Text>{location.name}</Text>
-                                {isProximity ? (<Button title="View Canvas" onPress={() => console.log('clicked')}/>) : null}
-                                {this.state.started_route ? (<Button title="Add to Route" onPress={() => this.updateRoute(landmark_location, location.placeID)}/>) : null}
-                                <Button title="View more information" onPress={() => console.log('clicked')}/>
-                            </ModalContent>
-                        </Modal>
-
-
                     </MapView.Marker>
                 }
                 return null;
+
+
             })}
 
             {this.state.data.map((location) => {
@@ -481,6 +463,17 @@ class map extends React.Component{
                 {!this.state.started_route ? (<Button color="#ff5c5c" title={this.state.started_journey ? "Cancel Journey" : "Start Journey"} onPress={() => this.generateFMLM({lat: 1.3553794, long: 103.8677444 })}></Button>) : null}
                 {this.state.started_journey ? (<Button title={this.state.started_route ? "Cancel Route" : "Start Route" } color="#009688" onPress={() => this.startJourney()}></Button>) : null}
             </View>
+
+
+            <RBS name={this.state.rbs_data.name}
+                updateRoute={this.updateRoute.bind(this)}
+                location={this.state.rbs_data.location}
+                placeID={this.state.rbs_data.placeID}
+                isProximity={this.state.rbs_data.isProximity}
+                started_route={this.state.started_route}
+                setRef={(ref) => {this.rbs = ref}}
+            />
+
 
         </View>
 
