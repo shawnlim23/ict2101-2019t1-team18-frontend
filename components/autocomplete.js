@@ -1,14 +1,15 @@
 import React, {Component} from 'react';
-import {StyleSheet,Text,TextInput,View,ScrollView,ActivityIndicator,Button} from 'react-native';
+import {StyleSheet,Text,TextInput,View,ScrollView,ActivityIndicator,Button,Dimensions} from 'react-native';
 import {GoogleAutoComplete} from 'react-native-google-autocomplete';
-import {API_KEY} from '../key';
 import LocationItem from './LocationItem';
+import {GOOGLE_PLACES_API} from 'react-native-dotenv';
+import {API_KEY} from '../key';
 
 class Autoc extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <GoogleAutoComplete apiKey={API_KEY} debounce={500} components={"country:sg"} minLength={3}>
+        <GoogleAutoComplete apiKey={GOOGLE_PLACES_API} debounce={500} components={"country:sg"} minLength={3}>
           {({
             handleTextChange,
             locationResults,
@@ -28,7 +29,7 @@ class Autoc extends React.Component {
                 <Button title="Clear" onPress={clearSearchs} />
               </View>
               {isSearching && <ActivityIndicator size="large" color="red" />}
-              <ScrollView style={{width:350}}>
+              <ScrollView style={{width:Dimensions.get('window').width}}>
                 {locationResults.map(el => (
                   <LocationItem
                     {...el}
@@ -53,13 +54,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   textInput: {
-    height: 40,
-    width: 300,
+    height: '100%',
+    width: '90%',
     borderWidth: 1,
     paddingHorizontal: 16,
   },
   inputWrapper: {
-    marginTop: 80,
+    marginTop: 5,
     flexDirection: 'row'
   },
 });
