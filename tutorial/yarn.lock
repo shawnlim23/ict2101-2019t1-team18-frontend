@@ -5215,6 +5215,11 @@ react-native-camera@^3.8.0:
   dependencies:
     prop-types "^15.6.2"
 
+react-native-image-picker@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-image-picker/-/react-native-image-picker-1.1.0.tgz#c2a0523886edb4cf2cdc008ad0a71433142a4d53"
+  integrity sha512-/KjHf4NNAjl6XM7FQuqvGDz1wB9sRdLf86+2yksLW/QTRR7CitX4TLCM8ZF9CX6Y0MsCTndkZia3zWE+nt/GiA==
+
 react-native-pinch-zoom-view@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/react-native-pinch-zoom-view/-/react-native-pinch-zoom-view-0.2.0.tgz#5ff469e7b1b4a69629a8fb31a226d3855e813799"
