@@ -1,6 +1,7 @@
 import React from 'react';
 import API_KEY from '../key';
-import { Button,StyleSheet, View, Text,TouchableOpacity ,SectionList,Alert,Platform,Image } from 'react-native';
+import { Button,StyleSheet, View, Text,TouchableOpacity ,SectionList,Alert,Platform,Image ,FlatList,Dimensions} from 'react-native';
+
 const DATA = [
   {
     title: 'Start location',
@@ -35,38 +36,38 @@ class SectionListItem extends React.Component{
         flexDirection:'row',
         backgroundColor:'#ffbb33'
       }}>       
-        {/* {this.renderSwitch(this.props.item.type)}          */}
-        {this.renderPhoto(this.props.data.photos[0])}
-        
+        {/* {this.renderPhoto(this.props.data.photos)} */}
+        {/* console.log({this.props.data}) */}
+        {/* console.log({this.props.data.result.photos.map(item => item.photo_reference)}) */}
+        {/* {this.props.data.photos.map((item)=>{
+          {console.log(item.photo_reference)}
+          {item.map((photosubitems)=>
+            {console.log(photosubitems.photo_reference)
+            console.log(photosubitems.width)}
+          )}
+            {item.name}
+                {item.photos.map((photosubitems)=>
+                    {photosubitems.photo_reference
+                    this.renderPhoto(photosubitems.photo_reference)
+                    }
+                )}          
+        })} */}
+        {/* <View style={{flexDirection:'row'}}>
+          
+        </View>
         <View style={{flexDirection:'column'}}>
           <Text style={{fontSize:12,marginLeft:20,marginRight:10}}>{this.props.data.rating}</Text>
           <Text style={{fontSize:12,marginLeft:20,marginRight:10}}>{this.props.data.name}</Text>
  
-          {/* <Text style={{fontSize:12,marginLeft:20,marginRight:10}}>{this.props.item.address}
-          </Text>
-          <Text style={{fontSize:12,marginLeft:20,marginRight:10}}>{this.props.item.description}
-          </Text> */} 
-        </View>
+        </View> */}
       </View>
     )
   }
   renderPhoto(param)
   {
-    console.log("Param" + param);
+    //console.log("Param" + param);
     <View><Image style={{width: 35, height: 35}} source={{uri: 'https://facebook.github.io/react-native/img/tiny_logo.png'}} /></View> 
-  }
-  renderSwitch(param)
-  {
-    switch (param){
-      case 'start':
-        return (<View><Image style={{width: 35, height: 35}} source={require('../images/startingpoint.jpg')} /></View> );
-      case 'stop':
-        return  (<View><Image style={{width: 35, height: 35}} source={require('../images/destination.jpg')} /></View> );
-      default:
-        return (<View><Image style={{width: 35, height: 35}} source={require('../images/transit.jpg')} /></View>);
-    }
-  }
- 
+  } 
 }
 
 class SectionHeader extends React.Component{
@@ -76,7 +77,7 @@ class SectionHeader extends React.Component{
       }}>
         
         <Text style={{fontSize:16,fontWeight:'bold',color:'black',margin:5}}>
-          {this.props.data.name}
+          {this.props.section}
           </Text>
           <View style={{backgroundColor:'rgb(77,120,140)',height:2,margin:1,marginLeft:20,marginRight:10}}></View>
       </View>
@@ -87,7 +88,8 @@ class DetailsScreen extends React.Component {
   constructor(props){
     super(props);
     this.state={
-      details:{},
+      details:[],
+      maindata:[],
       placeID:''
     }
   }
@@ -96,11 +98,14 @@ class DetailsScreen extends React.Component {
     if(!this.state.placeID||this.state.placeID!==placeID)
     {
       try{
+        //console.log('ASFDASDF')
         const data = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${ placeID }&fields=name,rating,formatted_phone_number,photos&key=AIzaSyDUBQ_mog4t13RTKllJcaPGI9Nk1rzkbZQ`);
+        //const data= await fetch("https://randomuser.me/api?results=10");
         const data_response = await data.json();
-        //console.log(data_response.result)
+        console.log(data_response.result.photos)
         this.setState({            
-            details: data_response.result,
+            details: data_response.result.photos,
+            maindata:data_response.result,
             placeID:placeID
         })
       } catch(error) {
@@ -108,28 +113,45 @@ class DetailsScreen extends React.Component {
       }
     }
   }
+  componentWillMount(){
+    this.getData('ChIJN1t_tDeuEmsRUsoyG83frY4');
+ }
   render() { 
-      this.getData('ChIJN1t_tDeuEmsRUsoyG83frY4');
-      //console.log(typeof(this.state.details));       
-      console.log(this.state.details);        
-      return (        
+      //let photo = this.state.details.result.photos.map(item => item.photo_reference)
+      //console.log(photo)
+      return (     
         <View style={styles.containerCol}>
           <Text style={styles.journeyheader}> Bus Journey Details </Text>
-          <View >
-           
-              <SectionList
-                renderItem={({item,index})=>{
+          <Text> Name: {this.state.maindata.name}</Text>
+          <View >       
+            <FlatList
+              data={this.state.details}
+              keyExtractor={(x,i)=>i}
+              renderItem={({item})=>
+              <View>  
+                {/* <Text>{`${item.photo_reference}`}</Text> */}
+                <Image style={{width:100, height: 100}}  
+                source={{uri: 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=50'+
+                '&maxheight=50&photoreference='+item.photo_reference+'&key=AIzaSyDUBQ_mog4t13RTKllJcaPGI9Nk1rzkbZQ'}}
+                />
+                <Text>Author:{item.html_attributions}</Text>
+              </View>
+
+              }
+            /> 
+             {/* <Image style={{width: item, height: item.height}}  source={{uri: item.photo_reference}} />   
+              {/* <SectionList
+                renderItem={({item,index,section})=>{
                   return(
-                  <SectionListItem item={item} index={index} data={this.state.details}>                    
+                  <SectionListItem item={item} index={index} >                    
                   </SectionListItem>)
                 }} 
                 renderSectionHeader={({section})=>{
-                  return(<SectionHeader section={section}  data={this.state.details}/>);
+                  return(<SectionHeader section={section}/>);
                 }}
-                sections={DATA}
-                keyExtractor={(item,index) => item.address}
-                >
-                  </SectionList>
+                sections={this.state.details}
+                keyExtractor={(item,index) => item.result}
+                ></SectionList> */}
              
           </View>
           <View style={styles.bottomRow}>
@@ -169,5 +191,10 @@ class DetailsScreen extends React.Component {
       backgroundColor:'yellow',
       borderRadius:10,
       alignSelf:'flex-start'
+    }, 
+    list: {
+      justifyContent: 'center',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
     },
   })
