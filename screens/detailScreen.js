@@ -116,6 +116,7 @@ class DetailsScreen extends React.Component {
   componentWillMount(){
     this.getData('ChIJN1t_tDeuEmsRUsoyG83frY4');
  }
+ 
   render() { 
       //let photo = this.state.details.result.photos.map(item => item.photo_reference)
       //console.log(photo)
@@ -123,7 +124,10 @@ class DetailsScreen extends React.Component {
         <View style={styles.containerCol}>
           <Text style={styles.journeyheader}> Bus Journey Details </Text>
           <Text> Name: {this.state.maindata.name}</Text>
-          <View >       
+          <TouchableOpacity style={styles.tabs} onPress={() => this.props.navigation.navigate('Home')}>
+                  <Text>Close</Text>
+              </TouchableOpacity> 
+          <View style={{flex:1}} >       
             <FlatList
               data={this.state.details}
               keyExtractor={(x,i)=>i}
@@ -134,11 +138,16 @@ class DetailsScreen extends React.Component {
                 source={{uri: 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=50'+
                 '&maxheight=50&photoreference='+item.photo_reference+'&key=AIzaSyDUBQ_mog4t13RTKllJcaPGI9Nk1rzkbZQ'}}
                 />
-                <Text>Author:{item.html_attributions}</Text>
+                <Text>Author:{this.rendername(item.html_attributions)}</Text>
               </View>
 
               }
-            /> 
+            />
+            </View>
+            <TouchableOpacity style={styles.tabs} onPress={() => this.props.navigation.navigate('Home')}>
+                  <Text>Close</Text>
+            </TouchableOpacity> 
+           
              {/* <Image style={{width: item, height: item.height}}  source={{uri: item.photo_reference}} />   
               {/* <SectionList
                 renderItem={({item,index,section})=>{
@@ -153,22 +162,23 @@ class DetailsScreen extends React.Component {
                 keyExtractor={(item,index) => item.result}
                 ></SectionList> */}
              
-          </View>
-          <View style={styles.bottomRow}>
-          <TouchableOpacity style={styles.tabs} onPress={() => this.props.navigation.navigate('Home')}>
-                  <Text>Close</Text>
-          </TouchableOpacity>      
-          </View>
+          
                
         </View>
       );
     }
-  
+    rendername(param)
+    {
+      const regex = /(<([^>]+)>)/ig;      
+      var t = param[0];
+      const result = t.replace(regex, '');
+     return result;
+    }
   }
   export default DetailsScreen;
   const styles = StyleSheet.create({
     tabs: {
-      height: 50,
+      height: 30,
       borderBottomWidth: StyleSheet.hairlineWidth,
       justifyContent: 'center',
       alignItems:'center'

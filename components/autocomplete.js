@@ -2,14 +2,13 @@ import React, {Component} from 'react';
 import {StyleSheet,Text,TextInput,View,ScrollView,ActivityIndicator,Button,Dimensions} from 'react-native';
 import {GoogleAutoComplete} from 'react-native-google-autocomplete';
 import LocationItem from './LocationItem';
-import {GOOGLE_PLACES_API} from 'react-native-dotenv';
 import {API_KEY} from '../key';
 
 class Autoc extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <GoogleAutoComplete apiKey={GOOGLE_PLACES_API} debounce={500} components={"country:sg"} minLength={3}>
+        <GoogleAutoComplete apiKey={API_KEY} debounce={500} components={"country:sg"} minLength={3}>
           {({
             handleTextChange,
             locationResults,
