@@ -10,7 +10,7 @@ import Leaderboard from './Leaderboard';
 import Profile from './Profile';
 import Canvas from './Canvas';
 import Icon from "react-native-vector-icons/FontAwesome";
-
+import LocationInformation from './LocationInformation';
 
 const MapStack = createStackNavigator({
   Journey: {
@@ -23,6 +23,12 @@ const MapStack = createStackNavigator({
     screen: Route,
     navigationOptions: {
       headerTitle: 'Routes',
+    },
+  },
+  LocationInformation: {
+    screen: LocationInformation,
+    navigationOptions: {
+      headerTitle: 'LocationInformation',
     },
   },
 });
