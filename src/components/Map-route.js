@@ -6,17 +6,20 @@ import {PermissionsAndroid} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {GOOGLE_PLACES_API, BACKEND_SERVER} from 'react-native-dotenv';
 import { Icon } from 'react-native-elements'
-// import RBSheet from "react-native-raw-bottom-sheet";
+import {isEmpty} from "lodash"
 import RBS from './bottomsheet'
+import Autocomplete from './Autocomplete'
+import { blue } from 'ansi-colors';
 
 
 
 
-class map extends React.Component{
+class Route extends React.Component{
 
     constructor(props){
 
         super(props);
+
         this.state = {
             latitude: 0,
             longitude: 0,
@@ -24,8 +27,6 @@ class map extends React.Component{
             data: [],
             first_mile: {},
             last_mile: {},
-            started_journey: false,
-            started_route: false,
             completed_first: false,
             journey_coordinates: [],
             fm_coordinates: [],
@@ -37,17 +38,17 @@ class map extends React.Component{
 
     }
 
+
+
     async findNearbyPlaces(){
 
         const data = {
             key: GOOGLE_PLACES_API,
             latlng: this.state.latitude + ',' + this.state.longitude,
-            radius: 500
+            radius: 200
         }
 
         const url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=' + data.key + '&location=' + data.latlng +'&radius=' + data.radius + '';
-
-
         let response = await fetch(url);
         let responseJSON = await response.json();
         let places = [];
@@ -61,115 +62,65 @@ class map extends React.Component{
                 rating: place.rating ? place.rating : 0
             })
         });
-
         this.setState({
             data: [this.state.data, ...places]
         })
 
     }
 
+   duringRoute(){
+        this.watchID = Geolocation.watchPosition((position) => {
+            this.setState({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            })
 
-    async generateFMLM(dest){
+            this.handleLocationChange(position);
 
-        const startLoc = [this.state.latitude, this.state.longitude];
-        const destinationLoc = [dest.lat, dest.long];
+            }, (error) => {
+                console.log(error.code, error.message);
+            },
+            {enableHighAccuracy: true, timeout: 20000, distanceFilter: 10, maximumAge: 1000}
+        );
 
-        if (!this.state.started_journey){
-
-            try{
-                const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?&key=${ GOOGLE_PLACES_API }&origin=${ startLoc }&destination=${ destinationLoc }&mode=${'transit'}&transit_mode=bus`)
-                const resJson = await response.json();
-
-                const steps = resJson.routes[0].legs[0].steps
-
-                const journey_instructions = steps.map(step=>step.html_instructions).join('.');
-
-
-                const first_mile = steps[0]
-                const last_mile = steps[steps.length - 1]
+    }
 
 
-                const overview_coordinates = polyUtil.decode(resJson.routes[0].overview_polyline.points).map(([latitude, longitude]) => ({
-                    latitude,
-                    longitude
-                }));
+    handleLocationChange(current_location){
+        const current = { latitude: current_location.coords.latitude, longitude: current_location.coords.longitude }
+        if (this.state.completed_first === false) {
+            this.checkRouteState(current, this.state.first_mile, 'first mile');
+        }else{
+            this.checkRouteState(current, this.state.last_mile, 'last_mile');
+        }
+       }
+
+
+    checkRouteState(current, mile, mile_name){
+
+        const end_mile = { latitude: mile.end_location.lat, longitude: mile.end_location.lng }
+        mile.steps.forEach((step) => {
+            const start_point = {latitude: step.start_location.lat, longitude: step.start_location.lng }
+
+            if (this.withinProximity(start_point, current, 0.05)){
+                const index = mile.steps.findIndex((stepIndex) => stepIndex === step);
+                const regex = /(<([^>]+)>)/ig;
+                const formatted_instructions = step.html_instructions.replace(regex, '');
 
                 this.setState({
-                    first_mile: first_mile,
-                    last_mile: last_mile,
-                    journey_coordinates: overview_coordinates,
-                    instruction: journey_instructions,
-                    started_journey: true
+                    instruction: formatted_instructions
                 })
-
-            } catch(error) {
-                console.log(error);
+                mile.steps.slice(index, 1);
             }
 
-        }else{
-
-            this.setState({
-                journey_coordinates: [],
-                started_journey: false,
-                first_mile: {},
-                last_mile: {},
-                completed_first: false,
-                fm_coordinates: [],
-                lm_coordinates: [],
-                instruction: ''
-            })
-        }
-
-
+            if (this.withinProximity(end_mile, current, 0.02)) {
+                this.setState({
+                    instruction: 'You have completed the ' + mile_name + ' journey',
+                    completed_first: true
+                })
+            }
+        })
     }
-
-
-
-   startJourney(){
-        if (!this.state.started_route){
-             // Start Camera and diplay polyline
-            this.animateCamera();
-
-            const fm_coordinates = polyUtil.decode(this.state.first_mile.polyline.points).map(([latitude, longitude]) => ({
-                latitude,
-                longitude
-            }));
-
-            const lm_coordinates = polyUtil.decode(this.state.last_mile.polyline.points).map(([latitude, longitude]) => ({
-                latitude,
-                longitude
-            }));
-
-            this.setState({
-                fm_coordinates: fm_coordinates,
-                lm_coordinates: lm_coordinates,
-                started_route: true,
-            })
-
-            this.watchID = Geolocation.watchPosition((position) => {
-
-                console.log(position);
-                this.handleLocationChange(position);
-
-                }, (error) => {
-                    console.log(error.code, error.message);
-                },
-                {enableHighAccuracy: true, timeout: 20000, distanceFilter: 10, maximumAge: 1000}
-            );
-        }else{
-            this.setState({
-                fm_coordinates: [],
-                lm_coordinates: [],
-                first_mile: {},
-                last_mile: {},
-                started_route: false,
-            })
-
-            Geolocation.clearWatch(this.watchID);
-        }
-    }
-
-
 
     withinProximity(checkPoint, centerPoint, km){
 
@@ -182,7 +133,57 @@ class map extends React.Component{
     }
 
 
-    async animateCamera(){
+
+
+    componentDidMount(){
+
+       const steps = this.props.navigation.getParam('steps');
+       const first_mile = steps[0]
+       const last_mile = steps[steps.length - 1]
+
+        this.setState({
+            latitude: first_mile.start_location.lat,
+            longitude: first_mile.start_location.lng
+        })
+
+       const fm_coordinates = polyUtil.decode(first_mile.polyline.points).map(([latitude, longitude]) => ({
+        latitude,
+        longitude
+        }));
+
+        const lm_coordinates = polyUtil.decode(last_mile.polyline.points).map(([latitude, longitude]) => ({
+            latitude,
+            longitude
+        }));
+
+        this.setState({
+            first_mile: first_mile,
+            last_mile: last_mile,
+            fm_coordinates: fm_coordinates,
+            lm_coordinates: lm_coordinates
+        })
+        this.duringRoute();
+
+    }
+
+
+    componentWillUnmount(){
+        Geolocation.clearWatch(this.watchID);
+    }
+
+    cancelRoute(){
+        this.setState({
+            first_mile: [],
+            last_mile: [],
+            fm_coordinates: [],
+            lm_coordinates:[],
+            completed_first: false
+        })
+        this.props.navigation.goBack();
+    }
+
+
+    animateCamera(){
         this.map.animateCamera(
             {
                center : { latitude: this.state.latitude, longitude: this.state.longitude },
@@ -193,78 +194,6 @@ class map extends React.Component{
         );
     }
 
-
-    async requestPermission(){
-        const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-        console.log(granted);
-       if (granted){
-           Geolocation.getCurrentPosition((position) => {
-            this.setState({
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude
-            });
-
-           }, (error) => {
-               console.log(error.code, error.message);
-           },
-           {enableHighAccuracy: true, timeout: 1000}
-           )
-       }
-    }
-
-
-
-    componentDidMount(){
-       this.requestPermission();
-    }
-
-
-    componentWillUnmount(){
-        Geolocation.clearWatch(this.watchID);
-    }
-
-
-   handleLocationChange(current_location){
-    const current = { latitude: current_location.coords.latitude, longitude: current_location.coords.longitude }
-    if (this.state.completed_first === false) {
-        this.checkRouteState(current, this.state.first_mile, 'first mile');
-    }else{
-        this.checkRouteState(current, this.state.last_mile, 'last_mile');
-    }
-   }
-
-
-   checkRouteState(current, mile, mile_name){
-
-        const end_mile = { latitude: mile.end_location.lat, longitude: mile.end_location.lng }
-
-        mile.steps.forEach((step) => {
-
-            const start_point = {latitude: step.start_location.lat, longitude: step.start_location.lng }
-
-            if (this.withinProximity(start_point, current, 0.02)){
-
-                const index = mile.steps.findIndex((stepIndex) => stepIndex === step);
-                const regex = /(<([^>]+)>)/ig;
-                const formatted_instructions = step.html_instructions.replace(regex, '');
-
-                this.setState({
-                    instruction: formatted_instructions
-                })
-                mile.steps.slice(index, 1);
-
-            }
-
-            if (this.withinProximity(end_mile, current, 0.02)) {
-                this.setState({
-                    instruction: 'You have completed the ' + mile_name + ' journey',
-                    completed_first: true
-                })
-            }
-
-        })
-
-   }
 
 
     componentDidUpdate(prevProps, prevState){
@@ -292,10 +221,7 @@ class map extends React.Component{
             }));
 
             const steps = responseJSON.routes[0].legs[0]
-
             this.state.completed_first ? this.setState({ lm_coordinates: coordinates, last_mile: steps }) : this.setState({ fm_coordinates: coordinates, first_mile: steps })
-
-
             const post_location = await fetch('http://' + BACKEND_SERVER + '/amble/landmark/' + placeID)
             const post_location_json = await post_location.json();
 
@@ -307,12 +233,6 @@ class map extends React.Component{
 
 
     }
-
-
-    // setRef(ref){
-    //     console.log(ref);
-    //     this.RBS = ref;
-    // }
 
 
     displayBottomSheet(name, placeID, latlong, isProximity) {
@@ -333,9 +253,7 @@ class map extends React.Component{
 
 
 
-
     render(){
-
         const mapStyles = StyleSheet.create({
             map: {
                 ...StyleSheet.absoluteFillObject,
@@ -357,7 +275,7 @@ class map extends React.Component{
             latitudeDelta: 0.01,
             longitudeDelta: 0.01
         }
-
+        console.log(initialRegion);
 
         return (
             <View style={{ flex: 1 }}>
@@ -369,20 +287,19 @@ class map extends React.Component{
                     this.map = ref;
                 }}
                 style={mapStyles.map}
-                region={initialRegion}
                 loadingEnabled={true}
                 moveOnMarkerPress={false}
                 followsUserLocation={true}
                 showsUserLocation={true}
                 showsCompass={false}
                 zoomEnabled={true}
+                // region={initialRegion}
+                onMapReady={() => this.animateCamera()}
+                // scrollEnabled={false}
+                // rotateEnabled={false}
+                // initialCamera= {initialCamera}
                 showsPointsOfInterest = {false}
             >
-
-            <Polyline
-                    coordinates={this.state.journey_coordinates}
-                    strokeWidth={3}
-            />
 
             <Polyline
                     coordinates={this.state.fm_coordinates}
@@ -395,6 +312,25 @@ class map extends React.Component{
                     strokeColor="red"
                     strokeWidth={10}
             />
+
+            {!isEmpty(this.state.first_mile) ? (<MapView.Marker
+                 coordinate = {{
+                    latitude: this.state.first_mile.end_location.lat,
+                    longitude: this.state.first_mile.end_location.lng
+                }}
+                pinColor = {'blue'}
+            />) : null }
+
+            {!isEmpty(this.state.first_mile) ? (<MapView.Marker
+                 coordinate = {{
+                    latitude: this.state.last_mile.end_location.lat,
+                    longitude: this.state.last_mile.end_location.lng
+                }}
+                pinColor = {'blue'}
+            />) : null }
+
+
+
 
 
             {this.state.data.map((location) => {
@@ -416,23 +352,8 @@ class map extends React.Component{
                     </MapView.Marker>
                 }
                 return null;
-
-
             })}
 
-            {this.state.data.map((location) => {
-                if (location.lat && location.long){
-                    return <MapView.Circle
-                        center = {{
-                            latitude: location.lat,
-                            longitude: location.long
-                        }}
-                        radius = {50}
-                        fillColor = {'rgba(230,238,255,0.5)'}
-                    />
-                }
-                return null;
-            })}
             </MapView>
 
             <View style={{
@@ -459,8 +380,8 @@ class map extends React.Component{
                     padding: 20,
                     borderRadius: 15
                 }}>
-                {!this.state.started_route ? (<Button color="#ff5c5c" title={this.state.started_journey ? "Cancel Journey" : "Start Journey"} onPress={() => this.generateFMLM({lat: 1.3553794, long: 103.8677444 })}></Button>) : null}
-                {this.state.started_journey ? (<Button title={this.state.started_route ? "Cancel Route" : "Start Route" } color="#009688" onPress={() => this.startJourney()}></Button>) : null}
+              <Button color="#ff5c5c" title="Cancel Route" onPress={() => this.cancelRoute()}></Button>
+
             </View>
 
 
@@ -469,7 +390,6 @@ class map extends React.Component{
                 location={this.state.rbs_data.location}
                 placeID={this.state.rbs_data.placeID}
                 isProximity={this.state.rbs_data.isProximity}
-                started_route={this.state.started_route}
                 setRef={(ref) => {this.rbs = ref}}
             />
 
@@ -480,4 +400,4 @@ class map extends React.Component{
     }
 };
 
-export default map;
+export default Route;
