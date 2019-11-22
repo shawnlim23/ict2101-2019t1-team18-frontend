@@ -201,6 +201,10 @@ class Route extends React.Component{
             this.findNearbyPlaces();
         }
     }
+    async getLocationInformation(placeID)
+    {
+        this.props.navigation.navigate('LocationInformation',{placeID:placeID});
+    }
 
 
     async updateRoute(waypoint, placeID){
@@ -391,6 +395,7 @@ class Route extends React.Component{
                 placeID={this.state.rbs_data.placeID}
                 isProximity={this.state.rbs_data.isProximity}
                 setRef={(ref) => {this.rbs = ref}}
+                getLocationInformation={this.getLocationInformation.bind(this)}
             />
 
 
