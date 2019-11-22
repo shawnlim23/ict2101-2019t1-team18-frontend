@@ -7,12 +7,15 @@ import LocationItem from './LocationItem';
 class Autocomplete extends React.Component {
 
 
-  state = {location: {}}
+  state = {location: {},inputValue:''}
 
-  getDetails=(latlong) => {
+  getDetails=(latlong,address) => {
       const updatedLatLong = latlong
+      const inputValue= address
+      console.log(inputValue)
       this.setState({
-        location: updatedLatLong
+        location: updatedLatLong,
+        inputValue:inputValue
       });
       this.props.onNewDestination(this.state.location)
   }
@@ -35,11 +38,11 @@ class Autocomplete extends React.Component {
               <View style={styles.inputWrapper}>
                 <TextInput
                   style={styles.textInput}
-                  placeholder="Search a places"
+                  placeholder={this.state.inputValue?this.state.inputValue:"Search a places"}
                   onChangeText={handleTextChange}
-                  value={inputValue}
+                  value={this.state.inputValue?this.state.inputValue:inputValue}
                 />
-                <Button title="Clear" onPress={clearSearch} />
+               
               </View>
               {isSearching && <ActivityIndicator size="large" color="red" />}
               <ScrollView style={{width:Dimensions.get('window').width}}>
@@ -69,9 +72,10 @@ const styles = StyleSheet.create({
   },
   textInput: {
     height: '100%',
-    width: '80%',
+    width: '100%',
     borderWidth: 1,
     paddingHorizontal: 16,
+    backgroundColor:'white'
   },
   inputWrapper: {
     marginTop: 5,
@@ -84,7 +88,8 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 100,
     flexDirection: 'column',
-    flex: 1
+    flex: 1,
+    alignItems:'center'
   }
 
 });
