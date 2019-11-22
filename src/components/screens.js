@@ -1,20 +1,29 @@
-import {Navigation} from 'react-native-navigation';
+// navigation.js
+import React from 'react';
+import { View, Text } from 'react-native';
+import { createAppContainer, createSwitchNavigator } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
+import SignIn from './SignIn';
+import SignUp from './SignUp';
 
-export function registerScreens() {
+import AuthLoadingScreen from './AuthLoading';
+import bottomTabNavigator from './Navigation'
 
-	Navigation.registerComponent('Amble.PostsList', () => require('./PostsList').default);
-	Navigation.registerComponent('Amble.AddPost', () => require('./AddPost').default);
-	Navigation.registerComponent('Amble.ViewPost', () => require('./ViewPost').default);
 
-	Navigation.registerComponent('Amble.Home', () => require('./Home').default);
-	Navigation.registerComponent('Amble.Map', () => require('./Map').default);
-	Navigation.registerComponent('Amble.Leaderboard', () => require('./Leaderboard').default);
-	Navigation.registerComponent('Amble.Canvas', () => require('./Canvas').default);
-	Navigation.registerComponent('Amble.Profile', () => require('./Profile').default);
+const AuthStack = createStackNavigator({
+	SignIn: SignIn,
+	SignUp: SignUp,
+}, {
+	initialRouteName: 'SignIn',
+})
 
-	Navigation.registerComponent('Amble.Initialising', (sc) => require('./Initialising').default);
-	Navigation.registerComponent('Amble.SignIn', () => require('./SignIn').default);
-	Navigation.registerComponent('Amble.SignUp', () => require('./SignUp').default);
-
-	Navigation.registerComponent('Amble.Screen2', () => require('./Screen2').default);
-}
+export default createAppContainer(createSwitchNavigator(
+	{
+	  AuthLoading: AuthLoadingScreen,
+	  App: bottomTabNavigator,
+	  Auth: AuthStack,
+	},
+	{
+	  initialRouteName: 'AuthLoading',
+	}
+  ));

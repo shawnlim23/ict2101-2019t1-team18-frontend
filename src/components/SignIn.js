@@ -9,16 +9,22 @@ import {
   AsyncStorage,
   TouchableHighlight
 } from 'react-native'
-import {Navigation} from 'react-native-navigation';
+import { createAppContainer } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
 
-import { goHome } from './Navigation'
-import { USER_KEY } from './config'
+import { USER_ID, TOKEN } from './config'
 
 import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
+import {BACKEND_SERVER} from 'react-native-dotenv';
 
 export default class SignIn extends React.Component {
+
+
+
+
+
+
   state = {
     username: '', password: ''
   }
@@ -28,36 +34,34 @@ export default class SignIn extends React.Component {
   signIn = async () => {
     const { username, password } = this.state
     try {
-       // login with provider
-       const user = await AsyncStorage.setItem(USER_KEY, username)
-       console.log('user successfully signed in!', user)
-       goHome()
+
+      const login_response = await fetch('http://' + BACKEND_SERVER + '/amble/auth/login', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: username,
+          password: password,
+        }),
+      });
+
+      const login_json = await login_response.json();
+
+      if (login_json.result === "success"){
+        await AsyncStorage.setItem(TOKEN, login_json.return.token);
+        await AsyncStorage.setItem('USER_ID', JSON.stringify(login_json.return.userID));
+        this.props.navigation.navigate('App');
+      }else{
+        this.props.navigation.navigate('SignUp');
+      }
     } catch (err) {
       console.log('error:', err)
     }
   }
   signUp = async () => {
-    try {
-       // sign up
-       Navigation.push(this.props.componentId, {
-        component: {
-          name: 'Amble.SignUp',
-          passProps: {
-              text: 'Pushed screen'
-          },
-          options: {
-              topBar: { visible: false,
-                title: {
-                  //text: 'Back'
-                }
-              }
-          }
-        }
-      });
-       //signIn()
-    } catch (err) {
-      console.log('error:', err)
-    }
+    this.props.navigation.navigate('SignUp');
   }
   render() {
     return (

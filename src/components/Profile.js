@@ -1,7 +1,54 @@
 import React, {Component} from 'react';
-import {View, Text, TextInput, StyleSheet, Image, ScrollView} from 'react-native';
+import {View, Text, TextInput, StyleSheet, Image, ScrollView, AsyncStorage, Button} from 'react-native';
+import {BACKEND_SERVER} from 'react-native-dotenv';
+
 
 class Profile extends Component {
+
+  constructor(props){
+    super(props);
+
+    this.state = {
+      name: '',
+      sex: '',
+      commute_method: '',
+      birthday: ''
+    }
+  }
+
+  async getUserDetails(){
+
+    const id = await AsyncStorage.getItem('USER_ID');
+
+    const getUser = await fetch('http://' + BACKEND_SERVER + `/amble/user/${ id }`);
+
+    const getUserJson = await getUser.json();
+
+    this.setState({
+      name: getUserJson.name,
+      sex: getUserJson.sex,
+      commute_method: getUserJson.commute_method.toString(),
+      birthday: getUserJson.birthdate
+    })
+
+  }
+
+
+  LogOut(){
+
+    AsyncStorage.clear();
+    this.props.navigation.navigate('SignIn');
+  }
+
+
+
+  componentDidMount(){
+      this.getUserDetails();
+  }
+
+
+
+
 
   render() {
     return (
@@ -15,7 +62,7 @@ class Profile extends Component {
               style={styles.name}
               autoCapitalize="none"
               placeholderTextColor='#808080'
-              defaultValue='JohnDoee81'
+              defaultValue={this.state.name}
               editable={false}
             />
 
@@ -31,7 +78,7 @@ class Profile extends Component {
               style={styles.name}
               autoCapitalize="none"
               placeholderTextColor='#808080'
-              defaultValue='20/02/1992'
+              defaultValue={this.state.birthday}
               editable={false}
             />
 
@@ -63,6 +110,10 @@ class Profile extends Component {
               <Image style={styles.photo} source={require('../assets/images/avatar.png')} />
             </View>
           </View>
+
+
+          <Button onPress={() => {this.LogOut()}} title="Log Out"></Button>
+
         </View>
       </ScrollView>
     );

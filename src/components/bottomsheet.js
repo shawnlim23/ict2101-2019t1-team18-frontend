@@ -54,7 +54,7 @@ class RBS extends React.Component{
         }>
             <Text>{this.props.name}</Text>
             {this.props.isProximity ? (<TouchableOpacity style={styles.button} ></TouchableOpacity>) : null}
-            {this.props.started_route ? (<TouchableOpacity style={styles.button} onPress={() => this.props.updateRoute(this.props.location, this.props.placeID)}><Text>Add to Route</Text></TouchableOpacity>) : null}
+            <TouchableOpacity style={styles.button} onPress={() => this.props.updateRoute(this.props.location, this.props.placeID)}><Text>Add to Route</Text></TouchableOpacity>
             <TouchableOpacity style={styles.button}><Text>View More Information</Text></TouchableOpacity>
         </View>
     </RBSheet>

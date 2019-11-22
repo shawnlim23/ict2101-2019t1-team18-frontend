@@ -12,8 +12,10 @@ import {
   Image,
   StyleSheet
 } from 'react-native'
-import { signIn } from './Navigation'
-import {Navigation} from 'react-native-navigation';
+import { createAppContainer } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
+
+
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
 
@@ -62,13 +64,7 @@ export default class SignUp extends React.Component {
     }
   }
   signIn = async () => {
-    try {
-       // sign up
-       Navigation.pop(this.props.componentId);
-
-    } catch (err) {
-      console.log('error:', err)
-    }
+    this.props.navigation.navigate('SignIn');
   }
  //user, email, dob, preferred lang, password, confirm password, i agree, sign up button
   render() {
