@@ -9,7 +9,6 @@ import { Icon } from 'react-native-elements'
 import {isEmpty} from "lodash"
 import RBS from './bottomsheet'
 import Autocomplete from './Autocomplete'
-import { blue } from 'ansi-colors';
 
 
 
