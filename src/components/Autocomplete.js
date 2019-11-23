@@ -3,11 +3,12 @@ import {StyleSheet,Text,TextInput,View,ScrollView,ActivityIndicator,Button, Dime
 import {GoogleAutoComplete} from 'react-native-google-autocomplete';
 import {GOOGLE_PLACES_API} from 'react-native-dotenv';
 import LocationItem from './LocationItem';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 class Autocomplete extends React.Component {
+  
 
-
-  state = {location: {},inputValue:''}
+  state = {location: {},inputValue:'',SearchRes:[] }
 
   getDetails=(latlong,address) => {
       const updatedLatLong = latlong
@@ -15,7 +16,8 @@ class Autocomplete extends React.Component {
       console.log(inputValue)
       this.setState({
         location: updatedLatLong,
-        inputValue:inputValue
+        inputValue:inputValue,
+        SearchRes:[]
       });
       this.props.onNewDestination(this.state.location)
   }
@@ -42,10 +44,13 @@ class Autocomplete extends React.Component {
                   onChangeText={handleTextChange}
                   value={this.state.inputValue?this.state.inputValue:inputValue}
                 />
-               
               </View>
               {isSearching && <ActivityIndicator size="large" color="red" />}
-              <ScrollView style={{width:Dimensions.get('window').width}}>
+              <ScrollView style={{width:Dimensions.get('window').width}}>                
+                {/* if(locationResults!=={this.state.SearchRes})
+                {
+                  this.setState({SearchRes:locationResults})
+                } */}
                 {locationResults.map(el => (
                   <LocationItem
                     {...el}

@@ -7,6 +7,7 @@ class LocationItem extends PureComponent {
   _handlePress = async () => {
     const res = await this.props.fetchDetails(this.props.place_id)
     this.props.getDetails({ latitude: res.geometry.location.lat, longitude: res.geometry.location.lng},res.formatted_address)
+    
     //console.log(res.formatted_address)
     // console.log('Lat:', res.geometry.location.lat)
     // console.log('Lng', res.geometry.location.lng)
