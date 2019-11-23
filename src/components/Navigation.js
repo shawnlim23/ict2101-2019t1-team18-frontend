@@ -11,7 +11,8 @@ import Profile from './Profile';
 import Canvas from './Canvas';
 import Icon from "react-native-vector-icons/FontAwesome";
 import LocationInformation from './LocationInformation';
-
+import AddCavas from './AddCanvas';
+import EditCanvas from './EditCanvas';
 
 const MapStack = createStackNavigator({
   Journey: {
@@ -32,6 +33,19 @@ const MapStack = createStackNavigator({
       headerTitle: 'LocationInformation',
     },
   },
+  AddCanvas: {
+    screen: AddCavas,
+    navigationOptions: {
+      headerTitle: 'Add Canvas',
+    },
+  },
+  EditCanvas: {
+    screen: EditCanvas,
+    navigationOptions: {
+      headerTitle: 'Edit Canvas',
+    },
+  },
+
 });
 
 

@@ -73,7 +73,7 @@ class RBS extends React.Component{
 
             {/* {this.props.isProximity ? (<TouchableOpacity style={styles.button} ></TouchableOpacity>) : null} */}
             <TouchableOpacity style={styles.addbutton} onPress={() => this.props.updateRoute(this.props.location, this.props.placeID)}><Icon name="plus-circle" size={15} color="white"><Text style={styles.text}> Add to Route</Text></Icon></TouchableOpacity>
-            <TouchableOpacity style={styles.moreinfobutton} onPress={() => this.props.getLocationInformation(this.props.placeID, this.props.isProximity)}><Icon name="info-circle" size={15} color="white"><Text style={styles.text}> View More Information</Text></Icon></TouchableOpacity>
+            <TouchableOpacity style={styles.moreinfobutton} onPress={() => this.props.getLocationInformation(this.props.placeID, this.props.isProximity, this.props.rating)}><Icon name="info-circle" size={15} color="white"><Text style={styles.text}> View More Information</Text></Icon></TouchableOpacity>
         </View>
     </RBSheet>
     );
