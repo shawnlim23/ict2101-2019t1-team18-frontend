@@ -1,18 +1,18 @@
 import React, {Component} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
-class AddPost extends Component {
+class AddCanvas extends Component {
 
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.text}>AddPost Screen</Text>
+        <Text style={styles.text}>Add Canvas Screen</Text>
       </View>
     );
   }
 }
 
-export default AddPost;
+export default AddCanvas;
 
 const styles = StyleSheet.create({
   container: {

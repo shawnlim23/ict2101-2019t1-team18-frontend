@@ -1,100 +1,229 @@
 import React, {Component} from 'react';
-import {View, Text, StyleSheet,Image,ActivityIndicator} from 'react-native';
+import {View, Text, StyleSheet,Image,ActivityIndicator,AsyncStorage, Dimensions,ScrollView} from 'react-native';
 import {GOOGLE_PLACES_API, BACKEND_SERVER} from 'react-native-dotenv';
+import { Card, ListItem, Button, Rating } from 'react-native-elements'
+import Icon from "react-native-vector-icons/FontAwesome";
+import ActionButton from 'react-native-action-button';
+
+
 
 class LocationInformation extends React.Component {
     constructor(props){
         super(props);
         this.state={
-          details:[],
-          photo1:[],
-          photo2:[],
-          photo3:[],
-          placeID:'',
-          prevdata:'',
-          isProximity: false
+            details:[],
+            photo1:[],
+            photo2:[],
+            photo3:[],
+            placeID:'',
+            prevdata:'',
+            isProximity: false,
+            canvases: []
         }
       }
       componentDidMount(){
         const placeID = this.props.navigation.getParam('placeID');
         const isProximity = this.props.navigation.getParam('isProximity');
+        const rating = this.props.navigation.getParam('isProximity');
         this.setState({
             placeID: placeID,
-            isProximity: isProximity
+            isProximity: isProximity,
+            rating: rating
         })
+
+
+        this.getCanvases(placeID).then((placeCanvases) => {
+            this.setState({
+                canvases: [...placeCanvases]
+            })
+        })
+
+
 
       }
 
 
-        async getData()
-        {
-            if(this.state.placeID!==this.state.prevdata)
-            {
-                try{
-                    //console.log(this.state.placeID)
-                    const data = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${ this.state.placeID }&fields=name,rating,formatted_phone_number,photos&key=${GOOGLE_PLACES_API}`);
-                    const data_response = await data.json();
-                    //console.log("DATA : "+ data_response.result.name)
-                    this.setState({
-                        details: data_response.result,
-                        photo1:data_response.result.photos[0],
-                        photo2:data_response.result.photos[1],
-                        photo3:data_response.result.photos[2],
-                        placeID:this.state.placeID,
-                        prevdata:this.state.placeID
-                    })
-                    } catch(error) {
-                        console.log(error)
-                    }
-            }
 
+
+    async getCanvases(placeID){
+
+        const landmark = await fetch('http://' + BACKEND_SERVER + '/amble/landmark/' + placeID + '/canvases');
+        const landmark_response = await landmark.json();
+        const canvases = landmark_response.canvases;
+
+        const placeCanvases = canvases.map((canvas) =>{ return {
+            id: canvas.canvasID,
+            userID: canvas.userID,
+            title: canvas.title,
+            description: canvas.description,
+            image: canvas.image,
+            rating: canvas.rating
+        }})
+
+        return placeCanvases;
+    }
+
+
+
+
+    async rateCanvas(canvasID, userID){
+        console.log(canvasID);
+        console.log(userID);
+        const settings = {
+            method: 'PUT',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              canvasID: canvasID,
+              userID: userID
+            })
+        };
+        try{
+            await fetch('http://' + BACKEND_SERVER + '/amble/canvas/rate', settings);
+        }catch (error){
+            console.log(error);
         }
+        console.log('success');
+
+    }
+
+    editCanvas(canvasID){
+        this.props.navigation.navigate('EditCanvas', {canvasID: canvasID});
+    }
+
+    addCanvas(){
+        this.props.navigation.navigate('AddCanvas');
+    }
+
+
+
+
+
+
+    async getData()
+    {
+        if(this.state.placeID!==this.state.prevdata)
+        {
+            try{
+                //console.log(this.state.placeID)
+                const data = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${ this.state.placeID }&fields=name,rating,formatted_phone_number,photos&key=${GOOGLE_PLACES_API}`);
+                const data_response = await data.json();
+                this.setState({
+                    details: data_response.result,
+                    photo1:data_response.result.photos[0],
+                    placeID:this.state.placeID,
+                    prevdata:this.state.placeID
+                })
+                } catch(error) {
+                    console.log(error)
+                }
+        }
+
+    }
+
+
+
   render() {
       this.getData();
 
+      let image1 = this.state.photo1
+
       const locationStyles = StyleSheet.create({
         canvasContainer: {
-            flex: 1,
+            flex: 3,
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: '#D3EDFF',
             position: 'absolute',
             bottom: 30,
             margin: 10,
-            padding: 20,
+            padding: 20
+        },
+        container: {
+            flex: 1,
+            backgroundColor: '#fff',
+            alignItems: 'center',
+            justifyContent: 'center',
+          },touchbutton: {
+            height: 40,
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            justifyContent: 'center',
+            backgroundColor:'skyblue',
+            minWidth:Dimensions.get('window').width
+          },
+        textstyle:{
+        textAlign: 'center',
+        fontWeight:'bold'
+
+        },
+        imagestyle:{
+        width:200, height: 123.6,borderRadius:20,borderWidth:1,alignSelf:'center',resizeMode:'cover'
         }
     });
-
 
     return (
 
         <View style={{flex: 1}}>
 
-            <View style={{flexDirection:'column', flex: 1}}>
-                <View style={{ flexDirection:'row'}}>
-                <Image style={{width:100, height: 100}}
-                    source={this.state.photo1?{uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=100&maxheight=100&photoreference=${this.state.photo1.photo_reference}&key=${GOOGLE_PLACES_API}`}:''}
+            <View style={{ flexDirection:'row', justifyContent: 'center', alignItems: 'center'}}>
+                <Image style={{width:Dimensions.get('window').width*0.8, height: (Dimensions.get('window').height*0.2),borderRadius:20,alignSelf:'center',resizeMode:'cover'}}
+                    source={this.state.photo1?{uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${Dimensions.get('window').width}&photoreference=${image1.photo_reference}&key=${GOOGLE_PLACES_API}`}:''}
                     PlaceholderContent={<ActivityIndicator />}
                     />
-                    <Image style={{width:100, height: 100}}
-                    source={this.state.photo2?{uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=100&maxheight=100&photoreference=${this.state.photo2.photo_reference}&key=${GOOGLE_PLACES_API}`}:''}
-                    PlaceholderContent={<ActivityIndicator />}
+             </View>
+             <Text style={locationStyles.textstyle}>Name: {this.state.details.name}</Text>
+             <Text style={locationStyles.textstyle}>Contact Number : {this.state.details.formatted_phone_number}</Text>
+             <Rating  type='star'  startingValue={this.state.rating} ratingCount={5}  imageSize={20}  showRating  onFinishRating={this.ratingCompleted}/>
+
+
+            {this.state.isProximity ?
+
+                <View style= {locationStyles.canvasContainer}>
+                    <View style={{flexDirection:'row'}}>
+                    {this.state.canvases.map((canvas) => {
+
+                            let image = 'data:image/png;base64,' + canvas.image
+                            return(<Card
+                            title={ canvas.title ? canvas.title : 'No Title' }
+                            image={{ uri: `${image}`}}
+                            imageProps={{ resizeMode: 'cover' }}
+                            imageStyle={{width: 150, height: 150}}
+                            >
+                            <Text style={{ marginBottom: 10 }}>
+                            { canvas.title ? canvas.title : 'No Description' }
+                            </Text>
+                            <Text style={{ marginBottom: 10 }}>Rating:
+                            { canvas.rating }
+                            </Text>
+                            <Button
+                            icon ={
+                                <Icon name="thumbs-o-up" />
+                            }
+                            color='red'
+                            title="Rate"
+                            onPress={()=> this.rateCanvas(canvas.id, canvas.userID)}
+                            />
+                            <Button
+                            icon ={
+                                <Icon name="pencil" />
+                            }
+                            color='blue'
+                            title="Edit"
+                            onPress={() => this.editCanvas(canvas.id)}
+                            />
+                        </Card>)
+                    })}
+                    </View>
+
+                    <ActionButton
+                    buttonColor="#f3f3f3"
+                    onPress={() => this.addCanvas()}
                     />
-                    <Image style={{width:100, height: 100}}
-                    source={this.state.photo3?{uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=100&maxheight=100&photoreference=${this.state.photo3.photo_reference}&key=${GOOGLE_PLACES_API}`}:''}
-                    PlaceholderContent={<ActivityIndicator />}
-                    />
-                </View>
-                <Text>Name: {this.state.details.name}</Text>
-                <Text>Contact Number : {this.state.details.formatted_phone_number}</Text>
-            </View>
 
+                 </View>
+            : <View style={{flexDirection:'column', flex: 3}}><Text style={{textAlign: 'center', fontSize: 20}}>You are not near the landmark</Text></View>}
 
-            <View style= {locationStyles.canvasContainer}>
-
-                {this.state.isProximity ? <Text>Yes There is something found</Text> : null}
-
-            </View>
 
 
         </View>

@@ -220,9 +220,9 @@ class Route extends React.Component{
     }
 
 
-    getLocationInformation(placeID, isProximity)
+    getLocationInformation(placeID, isProximity, rating)
     {
-        this.props.navigation.navigate('LocationInformation',{placeID:placeID, isProximity: isProximity});
+        this.props.navigation.navigate('LocationInformation',{placeID:placeID, isProximity: isProximity, rating: rating});
     }
 
 
@@ -256,7 +256,7 @@ class Route extends React.Component{
     }
 
 
-    displayBottomSheet(name, placeID, latlong, isProximity) {
+    displayBottomSheet(name, placeID, latlong, isProximity, rating) {
 
         this.rbs.open();
         // this.RBS.open();
@@ -264,7 +264,8 @@ class Route extends React.Component{
             name: name,
             placeID: placeID,
             location: latlong,
-            isProximity: isProximity
+            isProximity: isProximity,
+            rating: rating
         }
         this.setState({
             rbs_data: rbs_data
@@ -349,7 +350,7 @@ class Route extends React.Component{
                             latitude: location.lat,
                             longitude: location.long
                         }}
-                        onPress={() => {this.displayBottomSheet(location.name, location.placeID, landmark_location, isProximity)}}
+                        onPress={() => {this.displayBottomSheet(location.name, location.placeID, landmark_location, isProximity, location.rating)}}
 
                     >
                     </MapView.Marker>
@@ -399,6 +400,7 @@ class Route extends React.Component{
                 placeID={this.state.rbs_data.placeID}
                 isProximity={this.state.rbs_data.isProximity}
                 setRef={(ref) => {this.rbs = ref}}
+                rating={this.state.rbs_data.rating}
                 getLocationInformation={this.getLocationInformation.bind(this)}
             />
 
