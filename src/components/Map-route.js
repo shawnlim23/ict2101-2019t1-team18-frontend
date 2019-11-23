@@ -9,7 +9,7 @@ import { Icon } from 'react-native-elements'
 import {isEmpty} from "lodash"
 import RBS from './bottomsheet'
 import Autocomplete from './Autocomplete'
-import { blue } from 'ansi-colors';
+import { StackActions, NavigationActions } from 'react-navigation';
 
 
 
@@ -32,6 +32,7 @@ class Route extends React.Component{
             fm_coordinates: [],
             lm_coordinates: [],
             instruction: '',
+            completed: false,
             rbs_data: { isOpen: false }
         };
         this.rbs = React.createRef();
@@ -93,7 +94,7 @@ class Route extends React.Component{
         }else{
             this.checkRouteState(current, this.state.last_mile, 'last_mile');
         }
-       }
+    }
 
 
     checkRouteState(current, mile, mile_name){
@@ -108,18 +109,26 @@ class Route extends React.Component{
                 const formatted_instructions = step.html_instructions.replace(regex, '');
 
                 this.setState({
-                    instruction: formatted_instructions
+                    instruction: formatted_instructions.replace('Restricted usage road', '')
                 })
                 mile.steps.slice(index, 1);
             }
 
-            if (this.withinProximity(end_mile, current, 0.02)) {
+            if (this.withinProximity(end_mile, current, 0.05)) {
                 this.setState({
                     instruction: 'You have completed the ' + mile_name + ' journey',
                     completed_first: true
                 })
+
+                if (mile_name === 'last_mile'){
+                    this.setState({
+                        completed: true
+                    })
+                }
+
             }
         })
+
     }
 
     withinProximity(checkPoint, centerPoint, km){
@@ -182,6 +191,14 @@ class Route extends React.Component{
         this.props.navigation.goBack();
     }
 
+    cancelJourney(){
+        const navigateAction = StackActions.reset({
+            index: 0,
+            actions: [NavigationActions.navigate({routeName: 'Journey'})]
+          })
+        this.props.navigation.dispatch(navigateAction)
+    }
+
 
     animateCamera(){
         this.map.animateCamera(
@@ -209,17 +226,14 @@ class Route extends React.Component{
         const end = this.state.completed_first ?
         [this.state.last_mile.end_location.lat, this.state.last_mile.end_location.lng] : [this.state.first_mile.end_location.lat, this.state.first_mile.end_location.lng ]
 
-        console.log(waypoint);
-
         try{
-            const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?&key=${ GOOGLE_PLACES_API }&origin=${ start }&destination=${ end }&mode=${'walking'}&waypoints=${ waypoint }`)
+            const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?&key=${ GOOGLE_PLACES_API }&origin=${ start }&destination=${ waypoint }&mode=${'walking'}&waypoints=${ end }`)
             const responseJSON = await response.json();
 
             const coordinates = polyUtil.decode(responseJSON.routes[0].overview_polyline.points).map(([latitude, longitude]) => ({
                 latitude,
                 longitude
             }));
-
             const steps = responseJSON.routes[0].legs[0]
             this.state.completed_first ? this.setState({ lm_coordinates: coordinates, last_mile: steps }) : this.setState({ fm_coordinates: coordinates, first_mile: steps })
             const post_location = await fetch('http://' + BACKEND_SERVER + '/amble/landmark/' + placeID)
@@ -253,29 +267,14 @@ class Route extends React.Component{
 
 
 
+
+
     render(){
         const mapStyles = StyleSheet.create({
             map: {
                 ...StyleSheet.absoluteFillObject,
-            },
-            button: {
-                width: 150,
-                backgroundColor: "#4EB151",
-                paddingVertical: 10,
-                alignItems: "center",
-                borderRadius: 3,
-                margin: 10,
-                flexDirection: "row",
             }
         });
-
-        let initialRegion = {
-            latitude: this.state.latitude,
-            longitude: this.state.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01
-        }
-        console.log(initialRegion);
 
         return (
             <View style={{ flex: 1 }}>
@@ -293,10 +292,7 @@ class Route extends React.Component{
                 showsUserLocation={true}
                 showsCompass={false}
                 zoomEnabled={true}
-                // region={initialRegion}
                 onMapReady={() => this.animateCamera()}
-                // scrollEnabled={false}
-                // rotateEnabled={false}
                 // initialCamera= {initialCamera}
                 showsPointsOfInterest = {false}
             >
@@ -366,7 +362,7 @@ class Route extends React.Component{
                 elevation: 10
             }}>
 
-                <Text style={{color: 'white', fontSize: 20}} lineHeight={3} >{this.state.instruction}</Text>
+                <Text style={{color: 'white', fontSize: 15}} lineHeight={3} >{this.state.instruction}</Text>
             </View>
 
 
@@ -380,7 +376,12 @@ class Route extends React.Component{
                     padding: 20,
                     borderRadius: 15
                 }}>
-              <Button color="#ff5c5c" title="Cancel Route" onPress={() => this.cancelRoute()}></Button>
+
+                    <Button color="#ff5c5c" title="Exit Navigation" onPress={() => this.cancelRoute()}></Button>
+                    <Button color="#009688" title="Cancel Route" onPress={() => this.cancelJourney()}></Button>
+                    {this.state.completed ?
+                        <Button color="#3f51b5" title="Back to Home" onPress={() => this.cancelJourney()}></Button>
+                    : null }
 
             </View>
 
