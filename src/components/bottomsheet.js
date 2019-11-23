@@ -1,7 +1,7 @@
 import { default as React } from 'react';
 import { Dimensions, StyleSheet, View , Text, TouchableOpacity } from 'react-native';
 import RBSheet from "react-native-raw-bottom-sheet";
-
+import Icon from "react-native-vector-icons/FontAwesome";
 
 
 class RBS extends React.Component{
@@ -18,14 +18,37 @@ class RBS extends React.Component{
 
   render() {
     const styles = StyleSheet.create({
-        button: {
-            width: 150,
+        addbutton: {
+            width: 100,
             backgroundColor: "#4EB151",
-            paddingVertical: 10,
-            alignItems: "center",
+            // paddingVertical: 10,
+            // alignItems: "center",
             borderRadius: 3,
             margin: 10,
-            flexDirection: "row",
+            padding: 10
+        },
+        moreinfobutton: {
+          width: 100,
+          // height: '30%',
+          backgroundColor: "#0d47a1",
+          // paddingVertical: 10,
+          // alignItems: "center",
+          borderRadius: 3,
+          margin: 10,
+          padding: 10
+      },
+        text: {
+          fontSize: 15,
+          textAlign: 'center',
+          fontWeight: 'bold',
+          color: 'white'
+        },
+        buttonStyleContainer: {
+          flex: 1,
+          flexDirection: 'row',
+          marginTop: 5,
+          justifyContent: 'center',
+          alignItems: 'center'
         }
     })
     // this.props.setRef = this.RBSheet;
@@ -45,17 +68,12 @@ class RBS extends React.Component{
         //     }
         // }}
         >
-        <View style = {
-           {
-            justifyContent: "center",
-            alignItems: "center",
-            flex: 1
-            }
-        }>
-            <Text>{this.props.name}</Text>
-            {this.props.isProximity ? (<TouchableOpacity style={styles.button} ></TouchableOpacity>) : null}
-            <TouchableOpacity style={styles.button} onPress={() => this.props.updateRoute(this.props.location, this.props.placeID)}><Text>Add to Route</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.button}><Text>View More Information</Text></TouchableOpacity>
+        <Text style={{textAlign: 'center', fontSize: 20}}>{this.props.name}</Text>
+        <View style={styles.buttonStyleContainer}>
+
+            {/* {this.props.isProximity ? (<TouchableOpacity style={styles.button} ></TouchableOpacity>) : null} */}
+            <TouchableOpacity style={styles.addbutton} onPress={() => this.props.updateRoute(this.props.location, this.props.placeID)}><Icon name="plus-circle" size={15} color="white"><Text style={styles.text}> Add to Route</Text></Icon></TouchableOpacity>
+            <TouchableOpacity style={styles.moreinfobutton}><Icon name="info-circle" size={15} color="white"><Text style={styles.text}> View More Information</Text></Icon></TouchableOpacity>
         </View>
     </RBSheet>
     );
