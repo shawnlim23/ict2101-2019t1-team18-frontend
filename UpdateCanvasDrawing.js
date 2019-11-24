@@ -177,7 +177,7 @@ class UpdateCanvasDrawing extends Component {
                           }}
                         onSketchSaved={(success, path) => {
                           Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path)
-                          //this.getImg(path)
+                          this.getImg(path)
 
                         }}
                     />
