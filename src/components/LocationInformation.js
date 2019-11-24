@@ -100,8 +100,8 @@ class LocationInformation extends React.Component {
                       PlaceholderContent={<ActivityIndicator />}
                       />  
                         <View style={{flexDirection:'column'}}>
-                          <Text style={styles.textstyle}> Rating : </Text>  
-                          <Rating  type='star'  startingValue={this.state.firstcanvas.rating} ratingCount={5}  imageSize={20}  showRating  onFinishRating={this.ratingCompleted}/> 
+                          <Text style={styles.textstyle}> Rating :{this.state.firstcanvas.rating} </Text>  
+                          {/* <Rating  type='star'  startingValue={this.state.firstcanvas.rating} ratingCount={5}  imageSize={20}  showRating  onFinishRating={this.ratingCompleted}/>  */}
                           <Text style={styles.textstyle}> Description : {this.state.firstcanvas!==[]?this.state.firstcanvas.description:''}</Text> 
                           <Text style={styles.textstyle}> Author : {this.state.firstcanvas!==[]?this.state.firstcanvas.userID:''}</Text>  
                           </View>
@@ -112,8 +112,8 @@ class LocationInformation extends React.Component {
                           PlaceholderContent={<ActivityIndicator />}
                           /> 
                               <View style={{flexDirection:'column'}}>
-                          <Text style={styles.textstyle}> Rating : </Text>                            
-                          <Rating  type='star'  startingValue={this.state.secondcanvas.rating} ratingCount={5} imageSize={20}  showRating  onFinishRating={this.ratingCompleted}/>                
+                          <Text style={styles.textstyle}> Rating :{this.state.secondcanvas.rating} </Text>                            
+                          {/* <Rating  type='star'  startingValue={this.state.secondcanvas.rating} ratingCount={5} imageSize={20}  showRating  onFinishRating={this.ratingCompleted}/>                 */}
                           <Text style={styles.textstyle}> Description : {this.state.secondcanvas!==[]?this.state.secondcanvas.description:''}</Text> 
                           <Text style={styles.textstyle}> Author : {this.state.secondcanvas!==[]?this.state.secondcanvas.userID:''}</Text> 
                           </View>   
