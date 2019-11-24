@@ -6,7 +6,6 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import ActionButton from 'react-native-action-button';
 
 
-
 class LocationInformation extends React.Component {
     constructor(props){
         super(props);
@@ -135,7 +134,6 @@ class LocationInformation extends React.Component {
             flex: 1,
             justifyContent: 'center',
             alignItems: 'center',
-            position: 'absolute',
             bottom: 0,
             margin: 5,
             padding: 2
@@ -164,7 +162,7 @@ class LocationInformation extends React.Component {
 
     return (
 
-        <View style={{flex: 1}}>
+        <ScrollView style={{flex: 1}}>
 
             <View style={{ flexDirection:'row', justifyContent: 'center', alignItems: 'center'}}>
                 <Image style={{width:Dimensions.get('window').width*0.8, height: (Dimensions.get('window').height*0.2),borderRadius:20,alignSelf:'center',resizeMode:'cover'}}
@@ -181,7 +179,7 @@ class LocationInformation extends React.Component {
             {this.state.isProximity ?
 
                 <View style= {locationStyles.canvasContainer}>
-                    <View style={{flexDirection:'row'}}>
+                    <View style={{flexDirection:'column'}}>
                     {this.state.canvases.map((canvas) => {
 
                             let image = 'data:image/png;base64,' + canvas.image
@@ -228,7 +226,7 @@ class LocationInformation extends React.Component {
 
 
 
-        </View>
+        </ScrollView>
     );
   }
 }

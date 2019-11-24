@@ -20,6 +20,7 @@ import ImagePicker from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
 
 
+
 const options ={
     title: 'Canvas',
     takePhotoButtonTitle: 'Capture Image',
@@ -96,48 +97,50 @@ class AddCanvas extends Component {
     })
   }
 
-  Submit = async () => {
+  async Submit() {
     const imgPath = this.props.navigation.getParam('path')
 
-    const convertedBase64 = await RNFS.readFile(imgPath, 'base64');
+    const base64Image = await RNFS.readFile(imgPath, 'base64');
 
     const img = 'data:image/png;base64,' + this.state.convertedBase64
 
     this.setState({
-      convertedBase64: convertedBase64,
+      convertedBase64: base64Image,
       createdDrawing: img
     });
 
-    const { placeID, canvasTitle, canvasDescription, canvasEditPerms, createdDrawing } = this.state
+    const { placeID, canvasTitle, canvasDescription, canvasEditPerms, convertedBase64 } = this.state
     try {
 
       const id = await AsyncStorage.getItem('USER_ID');
+      console.log(convertedBase64);
 
-      const createCanvas_response = await fetch('http://' + BACKEND_SERVER + `/amble/canvas/createCanvas`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userID: id,
-          placeID: placeID,
-          title: canvasTitle,
-          description: canvasDescription,
-          editable: canvasEditPerms
-        }), file: createdDrawing
-      });
+      const setting = {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userID: id,
+            placeID: placeID,
+            title: canvasTitle,
+            description: canvasDescription,
+            editable: canvasEditPerms,
+            file: convertedBase64
+          })
+      }
+
+
+      const createCanvas_response = await fetch('http://' + BACKEND_SERVER + '/amble/canvas/createCanvas', setting)
 
       const createCanvas_json = await createCanvas_response.json();
       console.log(createCanvas_json);
-      if (createCanvas_json.result === "success"){
+
         this.setModalVisible(true);
         //this.props.navigation.navigate('App');
         console.log('updated successfully')
-        this.props.navigation.navigate('LocationInformation');
-      }else{
-        //this.props.navigation.navigate('SignUp');
-      }
+        this.props.navigation.goBack();
     } catch (err) {
       console.log('error:', err)
     }

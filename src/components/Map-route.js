@@ -188,7 +188,7 @@ class Route extends React.Component{
             lm_coordinates:[],
             completed_first: false
         })
-        this.props.navigation.goBack();
+
     }
 
     cancelJourney(){
