@@ -124,9 +124,8 @@ class AddCanvas extends Component {
           placeID: placeID,
           title: canvasTitle,
           description: canvasDescription,
-          editable: canvasEditPerms,
-          file: createdDrawing
-        })
+          editable: canvasEditPerms
+        }), file: createdDrawing
       });
 
       const createCanvas_json = await createCanvas_response.json();
