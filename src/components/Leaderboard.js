@@ -20,7 +20,7 @@ class Leaderboard extends Component {
     {
       try{      
 
-        const leaderboard = await fetch('http://' + BACKEND_SERVER + '/amble/canvases');
+        const leaderboard = await fetch('http://' + BACKEND_SERVER + '/amble/canvas/top');
         const leaderboard_response = await leaderboard.json();
         console.log(leaderboard_response)
         
@@ -44,19 +44,17 @@ class Leaderboard extends Component {
     return (
       <View style={styles.container}>
         <Text style={styles.text}>LeaderBoard: Top 5</Text>
-       <FlatList style={{flex:1, minWidth:(Dimensions.get('window').width*0.7)}} data={this.state.leaderboarddata}
+       <FlatList style={{flex:1, minWidth:(Dimensions.get('window').width)}} data={this.state.leaderboarddata}
        keyExtractor={(x,i)=> i}
        renderItem={({item})=>
        <View style={{flexDirection:'row'}}>
        <Image style={styles.imagestyle}  
         source={{uri: `data:image/gif;base64,${item.image}`}}
         PlaceholderContent={<ActivityIndicator />}
-        /> 
-        <View style={{flexDirection:'column'}}>
+        />        
         <Text style={{fontStyle:'italic',fontWeight:'bold'}}>User : {item.userID}</Text>
         <Text style={{fontStyle:'italic',fontWeight:'bold'}}>Likes  : {item.rating}</Text>
         {/* <Rating  type='star'  startingValue={item.rating} ratingCount={5}  imageSize={20}  showRating  onFinishRating={this.ratingCompleted}/>                          */}
-        </View>
        </View>}
        />
          {/* <Text style={styles.text}>Leaderboard Screen</Text> */}
