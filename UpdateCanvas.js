@@ -103,19 +103,21 @@ class CreateCanvas extends Component {
 
       const id = await AsyncStorage.getItem('USER_ID');
 
-      const createCanvas_response = await fetch('http://' + BACKEND_SERVER + `/amble/canvas/createCanvas`, {
+      const canvasId = 1;
+
+      const createCanvas_response = await fetch('http://' + BACKEND_SERVER + `/amble/canvas/image/${ canvasId }`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userID: id,
-          placeID: placeID,
-          title: canvasTitle,
-          description: canvasDescription,
-          editable: canvasEditPerms
-        }), file: createdDrawing
+          //userID: id,
+          //placeID: placeID,
+          //title: canvasTitle,
+          //description: canvasDescription,
+          file: createdDrawing
+        })
       });
 
       const createCanvas_json = await createCanvas_response.json();
@@ -229,7 +231,7 @@ class CreateCanvas extends Component {
                 </View>
                 <View style={styles.cardFooter}>
                   <View style={styles.profileButtons}>
-                    <Button onPress={() => {this.Submit()}} title="Submit"></Button>
+                    <Button onPress={() => {this.Submit()}} title="Update Canvas"></Button>
                   </View>
                 </View>
 
