@@ -11,8 +11,11 @@ import Profile from './Profile';
 import Canvas from './Canvas';
 import Icon from "react-native-vector-icons/FontAwesome";
 import LocationInformation from './LocationInformation';
-import AddCavas from './AddCanvas';
+import EditProfile from './EditProfile';
+import AddCanvas from './AddCanvas';
 import EditCanvas from './EditCanvas';
+import CanvasDrawing from './CanvasDrawing';
+
 
 const MapStack = createStackNavigator({
   Journey: {
@@ -34,9 +37,15 @@ const MapStack = createStackNavigator({
     },
   },
   AddCanvas: {
-    screen: AddCavas,
+    screen: AddCanvas,
     navigationOptions: {
       headerTitle: 'Add Canvas',
+    },
+  },
+  CanvasDrawing: {
+    screen: CanvasDrawing,
+    navigationOptions: {
+      headerTitle: 'Canvas Drawing',
     },
   },
   EditCanvas: {
@@ -46,6 +55,22 @@ const MapStack = createStackNavigator({
     },
   },
 
+});
+
+
+const ProfileStack = createStackNavigator({
+  Profile: {
+    screen: Profile,
+    navigationOptions: {
+      headerTitle: 'Profile',
+    },
+  },
+  EditProfile: {
+    screen: EditProfile,
+    navigationOptions: {
+      headerTitle: 'EditProfile',
+    },
+  },
 });
 
 
@@ -81,7 +106,7 @@ const bottomTabNavigator = createBottomTabNavigator(
       }
     },
     Profile: {
-      screen: Profile,
+      screen: ProfileStack,
       navigationOptions: {
         tabBarLabel: 'Profile',
         tabBarIcon: ({ tintColor }) => (

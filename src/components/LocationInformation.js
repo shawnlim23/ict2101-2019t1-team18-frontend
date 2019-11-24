@@ -94,7 +94,7 @@ class LocationInformation extends React.Component {
     }
 
     addCanvas(){
-        this.props.navigation.navigate('AddCanvas');
+        this.props.navigation.navigate('AddCanvas', {placeID: this.state.placeID});
     }
 
 
