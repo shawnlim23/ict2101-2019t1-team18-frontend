@@ -7,7 +7,8 @@ import {
   TextInput,
   Image,
   AsyncStorage,
-  TouchableHighlight
+  TouchableHighlight,
+  Linking
 } from 'react-native'
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
@@ -63,6 +64,13 @@ export default class SignIn extends React.Component {
   signUp = async () => {
     this.props.navigation.navigate('SignUp');
   }
+
+  resetPassword = () => {
+    Linking.openURL('http://' + BACKEND_SERVER + '/amble/auth/resetpassword').catch(err => console.error("Couldn't load page", err));
+  };
+
+
+
   render() {
     return (
       <View style={styles.container}>
@@ -101,6 +109,11 @@ export default class SignIn extends React.Component {
             onPress={this.signUp}
           />
         </TouchableHighlight>
+
+        <Text style={styles.bottomText}>
+        Forgot your password? <Text onPress={this.resetPassword}>
+           Reset it here!
+        </Text></Text>
       </View>
     )
   }

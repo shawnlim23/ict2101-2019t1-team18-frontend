@@ -18,6 +18,7 @@ class Profile extends Component {
       birthday: '',
       editable: false,
       mode: 'date',
+      canvas_images: []
     }
   }
 
@@ -59,6 +60,20 @@ class Profile extends Component {
 
   }
 
+  async getCanvases(){
+
+    const id = await AsyncStorage.getItem('USER_ID')
+    const response = await fetch('http://' + BACKEND_SERVER + `/amble/user/${ id }/canvases`);
+    const user_canvases_json = await response.json();
+    const user_canvases = user_canvases_json.canvases;
+    console.log(user_canvases)
+    const canvas_images = user_canvases.map(canvas => canvas.image);
+
+    this.setState({
+      canvas_images: canvas_images
+    })
+  }
+
 
   LogOut(){
 
@@ -72,6 +87,7 @@ class Profile extends Component {
 
   componentDidMount(){
       this.getUserDetails();
+      this.getCanvases();
   }
 
   render() {
@@ -150,12 +166,11 @@ class Profile extends Component {
           <View style={styles.photosCard}>
             <Text style={styles.cardTitle}>My Canvas</Text>
             <View style={styles.photosContainer}>
-              <Image style={styles.photo} source={require('../assets/images/avatar.png')} />
-              <Image style={styles.photo} source={require('../assets/images/avatar.png')} />
-              <Image style={styles.photo} source={require('../assets/images/avatar.png')} />
-              <Image style={styles.photo} source={require('../assets/images/avatar.png')} />
-              <Image style={styles.photo} source={require('../assets/images/avatar.png')} />
-              <Image style={styles.photo} source={require('../assets/images/avatar.png')} />
+              {this.state.canvas_images.map((canvas_image) =>{
+                let base64_img = 'data:image/png;base64,' + canvas.image;
+                return (<Image style={styles.photo} source={{uri: `${ base64_img }`}} />)
+
+              })}
             </View>
           </View>
 
