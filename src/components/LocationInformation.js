@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {View, Text, StyleSheet,Image,ActivityIndicator,AsyncStorage, Dimensions,ScrollView} from 'react-native';
+import {View, Text, StyleSheet,Image,ActivityIndicator,AsyncStorage,TouchableOpacity, Dimensions,ScrollView} from 'react-native';
 import {GOOGLE_PLACES_API, BACKEND_SERVER} from 'react-native-dotenv';
 import { Card, ListItem, Button, Rating } from 'react-native-elements'
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -24,7 +24,7 @@ class LocationInformation extends React.Component {
       componentDidMount(){
         const placeID = this.props.navigation.getParam('placeID');
         const isProximity = this.props.navigation.getParam('isProximity');
-        const rating = this.props.navigation.getParam('isProximity');
+        const rating = this.props.navigation.getParam('rating');
         this.setState({
             placeID: placeID,
             isProximity: isProximity,
@@ -128,17 +128,17 @@ class LocationInformation extends React.Component {
   render() {
       this.getData();
 
-      let image1 = this.state.photo1
+      let image1 = this.state.photo1.photo_reference
 
       const locationStyles = StyleSheet.create({
         canvasContainer: {
-            flex: 3,
+            flex: 1,
             justifyContent: 'center',
             alignItems: 'center',
             position: 'absolute',
-            bottom: 30,
-            margin: 10,
-            padding: 20
+            bottom: 0,
+            margin: 5,
+            padding: 2
         },
         container: {
             flex: 1,
@@ -168,14 +168,15 @@ class LocationInformation extends React.Component {
 
             <View style={{ flexDirection:'row', justifyContent: 'center', alignItems: 'center'}}>
                 <Image style={{width:Dimensions.get('window').width*0.8, height: (Dimensions.get('window').height*0.2),borderRadius:20,alignSelf:'center',resizeMode:'cover'}}
-                    source={this.state.photo1?{uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${Dimensions.get('window').width}&photoreference=${image1.photo_reference}&key=${GOOGLE_PLACES_API}`}:''}
+                    source={this.state.photo1 ? {uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${ image1 }&key=${ GOOGLE_PLACES_API }`} : ''}
                     PlaceholderContent={<ActivityIndicator />}
                     />
              </View>
+             <View style={{ flexDirection: 'column', flex: 1 }}>
              <Text style={locationStyles.textstyle}>Name: {this.state.details.name}</Text>
              <Text style={locationStyles.textstyle}>Contact Number : {this.state.details.formatted_phone_number}</Text>
              <Rating  type='star'  startingValue={this.state.rating} ratingCount={5}  imageSize={20}  showRating  onFinishRating={this.ratingCompleted}/>
-
+             </View>
 
             {this.state.isProximity ?
 
@@ -216,9 +217,10 @@ class LocationInformation extends React.Component {
                     })}
                     </View>
 
-                    <ActionButton
-                    buttonColor="#f3f3f3"
-                    onPress={() => this.addCanvas()}
+                    <Button
+                        raised={true}
+                        title="Add Canvas"
+                        onPress={() => this.addCanvas()}
                     />
 
                  </View>
