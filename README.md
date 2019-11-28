@@ -171,6 +171,12 @@ yarn install
 
 * [React Native](https://facebook.github.io/react-native/) - The mobile development framework used
 
+## Component Diagram 
+
+![](https://i.imgur.com/DCTGpR0.png)
+
+
+
 ## Authors
 
 **SIT ICT2101 2019 Team 18** 
